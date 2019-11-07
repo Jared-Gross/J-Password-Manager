@@ -5,6 +5,9 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import QtTest
+from PyQt5 import *
+from functools import partial
+
 from cryptography.fernet import Fernet
 import base64
 
@@ -18,7 +21,7 @@ btn_size = 25
 #         default="pbkdf2_sha256",
 #         pbkdf2_sha256__default_rounds=30000
 # )
-import getpass, tempfile, os, json, re
+import getpass, tempfile, os, json, re, pyperclip
 username = getpass.getuser()
 password_dir = tempfile.gettempdir() + '/JMP/'
 master_password = ''
@@ -26,6 +29,21 @@ master_password = ''
 class MainMenu(QMainWindow):
     def __init__(self):
         super().__init__()
+        palette = QPalette()
+        palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        palette.setColor(QPalette.WindowText, Qt.white)
+        palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        palette.setColor(QPalette.ToolTipBase, Qt.white)
+        palette.setColor(QPalette.ToolTipText, Qt.white)
+        palette.setColor(QPalette.Text, Qt.white)
+        palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        palette.setColor(QPalette.ButtonText, Qt.white)
+        palette.setColor(QPalette.BrightText, Qt.red)
+        palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        palette.setColor(QPalette.HighlightedText, Qt.black)
+        app.setPalette(palette)
         self.title = title + ' ' + version
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.width = width
@@ -58,6 +76,41 @@ class MainMenu(QMainWindow):
         self.btn_min.setFont(QFont('Calibri', 20))
         self.btn_min.setToolTip('Minimize.')
         self.btn_min.setText('-')
+        
+        self.txtSearch = LineEdit(self)
+        self.txtSearch.move(7, 30)
+        self.txtSearch.resize(self.width - (7 * 2), 30)
+        self.txtSearch.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+        # self.txtSearch.textChanged.connect(self.verify_text)
+        passwords = ['password', 'abc123', 'dragon', 'test', 'test2', 'test', 'test2']
+        site_names = ['google', 'microsoft', 'facebook', 'test', 'test2', 'test', 'test2']
+        scroll = QScrollArea(self)
+        scroll.move(7, 70)
+        scroll.resize(self.width - (7 * 2), 320)
+        scroll.setWidgetResizable(True)
+        self.content = QWidget()
+        scroll.setWidget(self.content)
+        lay = QGridLayout(self.content)
+        # lay.setColumnStretch(0, 1)
+        x = 10
+        y = 1
+        for i, j in enumerate(passwords):
+            y += 1
+            self.lblName = QLabel(self)
+            self.lblName.setText(site_names[i])
+            lay.addWidget((self.lblName), y, 0)
+            self.btnPassword = QPushButton(self)
+            self.btnPassword.setFlat(True)
+            self.btnPassword.setToolTip('Copy {} to Clipboard'.format(j))
+            self.btnPassword.setText(j)
+            text = partial(self.copy_password, self.btnPassword.text())
+            self.btnPassword.clicked.connect(text)
+            lay.addWidget((self.btnPassword), y, 1)
+        self.layout().addWidget(scroll)
+        # self.setStyleSheet("QScrollArea{width:100 px; height: 200 px}")
+
+    def copy_password(self,b):
+        pyperclip.copy(b)
         # self.create_master_password()
         # lOGIN ITEMS END
     def keyPressEvent(self, event):
@@ -477,7 +530,6 @@ class ButtonGreen(QToolButton):
             self.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
             self.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
-            
 class ButtonGray(QToolButton):
     def __init__(self, parent=None):
         super(ButtonGray, self).__init__(parent)
@@ -513,7 +565,6 @@ class LineEdit(QLineEdit):
         super(LineEdit, self).focusOutEvent(e) #required to remove cursor on focusOut
         self.deselect()
         self.readyToEdit = True
-        
 
 def write_key():
     key = Fernet.generate_key()
@@ -526,41 +577,43 @@ def load_key():
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
-    if not os.path.exists(password_dir):
-            os.makedirs(password_dir)
+    m = MainMenu()
+    m.show()
+    # if not os.path.exists(password_dir):
+    #         os.makedirs(password_dir)
 
-    if not os.path.exists(password_dir + 'key.key'):
-        file = open(password_dir + "key.key", "w")
-        file.write('')
-        file.close()
-        create_pass_popup = create_password()
-        create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
-        create_pass_popup.setWindowTitle('Create Password')
-        create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
-        create_pass_popup.show()
-    else:
-        if os.stat(password_dir + 'key.key').st_size != 0:
-            login = Login()
-            login.setWindowTitle('Login')
-            login.show()
-        else:
-            create_pass_popup = create_password()
-            create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
-            create_pass_popup.setWindowTitle('Create Password')
-            create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
-            create_pass_popup.show()
+    # if not os.path.exists(password_dir + 'key.key'):
+    #     file = open(password_dir + "key.key", "w")
+    #     file.write('')
+    #     file.close()
+    #     create_pass_popup = create_password()
+    #     create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
+    #     create_pass_popup.setWindowTitle('Create Password')
+    #     create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+    #     create_pass_popup.show()
+    # else:
+    #     if os.stat(password_dir + 'key.key').st_size != 0:
+    #         login = Login()
+    #         login.setWindowTitle('Login')
+    #         login.show()
+    #     else:
+    #         create_pass_popup = create_password()
+    #         create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
+    #         create_pass_popup.setWindowTitle('Create Password')
+    #         create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+    #         create_pass_popup.show()
 
-    if not os.path.exists(password_dir + 'master.key'):
-        file = open(password_dir + "master.key", "w")
-        file.write('')
-        file.close()
-        create_pass_popup = create_password()
-        create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
-        create_pass_popup.setWindowTitle('Create Password')
-        create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
-        create_pass_popup.show()
-    else:
-        file = open(password_dir + "master.key", "rb")
-        master_password = file.read()
-        file.close()
+    # if not os.path.exists(password_dir + 'master.key'):
+    #     file = open(password_dir + "master.key", "w")
+    #     file.write('')
+    #     file.close()
+    #     create_pass_popup = create_password()
+    #     create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
+    #     create_pass_popup.setWindowTitle('Create Password')
+    #     create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+    #     create_pass_popup.show()
+    # else:
+    #     file = open(password_dir + "master.key", "rb")
+    #     master_password = file.read()
+    #     file.close()
     sys.exit(app.exec_())
