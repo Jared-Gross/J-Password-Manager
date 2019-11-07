@@ -149,6 +149,7 @@ class Login(QDialog):
         self.txtPassword.textChanged.connect(self.verify_text)
         self.get_password()
         # lOGIN ITEMS END
+        
     def verify_text(self):
         x = list(self.txtPassword.text())
         if len(x) > 0:
@@ -157,6 +158,7 @@ class Login(QDialog):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
             self.login()
+            
     def login(self):
         temp = self.txtPassword.text()
         key = load_key()
@@ -357,10 +359,12 @@ class create_password(QDialog):
         self.verify_text()
         # self.create_master_password()
         # lOGIN ITEMS END
+        
     def verify_text(self):
         x = list(self.txtPassword.text())
         y = list(self.txtPasswordConfirm.text())
         # if not re.match(r'[A-Za-z0-9@#$%^&+=]{8,}', self.txtPassword.text()):
+
         if len(x) < 8:
             self.menuBarTitle.setText('  Create a Password')
             self.btnCreatePassword.setEnabled(False)
@@ -388,6 +392,7 @@ class create_password(QDialog):
         if event.key() == Qt.Key_Return:
             if len(x) >= 8 and len(y) >= 1 and  self.txtPasswordConfirm.text() == self.txtPassword.text() and self.btnCreatePassword.isEnabled():
                 self.create_master_password()
+                
     def create_master_password(self):
         global master_password
         if self.txtPasswordConfirm.text() == self.txtPassword.text():
