@@ -4,6 +4,7 @@ from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5 import QtTest
 from cryptography.fernet import Fernet
 import base64
 
@@ -30,7 +31,7 @@ class MainMenu(QMainWindow):
         self.width = width
         self.height = height
         self.setFixedSize(self.width, self.height)
-        self.setStyleSheet("""background-color: #151515""")
+        self.setStyleSheet("""QMainWindow{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
 
         # TITLE BAR START
         self.menuBarTitle = QLabel(self)
@@ -38,7 +39,7 @@ class MainMenu(QMainWindow):
         self.menuBarTitle.resize(self.width, btn_size + 1)
         self.menuBarTitle.move(0,0)
         self.menuBarTitle.setFont(QFont('Calibri', 10))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; ")
+        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
 
         self.btn_close = ButtonRed(self)
         self.btn_close.clicked.connect(self.btn_close_clicked)
@@ -88,12 +89,12 @@ class MainMenu(QMainWindow):
     def btn_min_clicked(self):
         self.showMinimized()
 
-class Login(QWidget):
+class Login(QDialog):
     def __init__(self, parent=None):
         super(Login, self).__init__(parent)
         self.title = title + ' ' + version
         self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setStyleSheet("""background-color: #151515""")
+        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.width = width / 1.5
         self.height = height / 2.5
         self.setFixedSize(self.width, self.height)
@@ -104,7 +105,7 @@ class Login(QWidget):
         self.menuBarTitle.resize(self.width, btn_size + 1)
         self.menuBarTitle.move(0,0)
         self.menuBarTitle.setFont(QFont('Calibri', 10))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; ")
+        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
 
         self.btn_close = ButtonRed(self)
         self.btn_close.clicked.connect(self.btn_close_clicked)
@@ -167,6 +168,7 @@ class Login(QWidget):
 
         if temp == temp_master:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+            QtTest.QTest.qWait(1000)
             self.main = MainMenu()
             self.main.setWindowTitle('Main')
             self.main.setFixedSize(width, height)
@@ -217,17 +219,17 @@ class MsgBox(QDialog):
         self.height = height / 4.5
         self.setFixedSize(self.width, self.height)
 
-        self.setStyleSheet("""background-color: #151515""")
+        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         # TITLE BAR START
         self.menuBarTitle = QLabel(self)
         self.menuBarTitle.setText('  ' + self.title)
         self.menuBarTitle.resize(self.width, btn_size + 1)
         self.menuBarTitle.move(0,0)
         self.menuBarTitle.setFont(QFont('Calibri', 10))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; ")
+        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
 
         self.btn_close = ButtonRed(self)
-        self.btn_close.clicked.connect(self.btn_close_clicked)
+        self.btn_close.clicked.connect(self.btn_proceed)
         self.btn_close.resize(btn_size + 10,btn_size)
         self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
         self.btn_close.move(self.width - (btn_size + 10),0)
@@ -251,14 +253,18 @@ class MsgBox(QDialog):
         
         self.btnOk = ButtonGreen(self)
         self.btnOk.setText('Ok')
-        self.btnOk.clicked.connect(self.close)
+        self.btnOk.clicked.connect(self.btn_proceed)
         self.btnOk.resize(btn_size + 20,btn_size)
         self.btnOk.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnOk.move(100,  60)
-        # self.show()
-    def btn_close_clicked(self):
+    
+    def btn_proceed(self):
+        self.login_popup = Login()
+        self.login_popup.setFixedSize(width / 1.5, height / 2.5)
+        self.login_popup.setWindowTitle('Login')
+        self.login_popup.setWindowFlags(Qt.FramelessWindowHint)
+        self.login_popup.show()
         self.close()
-
     def btn_min_clicked(self):
         self.showMinimized()
     # MOVE WINDOW START
@@ -278,7 +284,7 @@ class MsgBox(QDialog):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
     # MOVE WINDOW END
-class create_password(QWidget):
+class create_password(QDialog):
     def __init__(self, parent=None):
         super(create_password, self).__init__(parent)
         self.check_if_file_exists()
@@ -288,14 +294,14 @@ class create_password(QWidget):
         self.height = height / 2.5
         self.setFixedSize(self.width, self.height)
 
-        self.setStyleSheet("""background-color: #151515""")
+        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         # TITLE BAR START
         self.menuBarTitle = QLabel(self)
         self.menuBarTitle.setText('  Create a Password')
         self.menuBarTitle.resize(self.width, btn_size + 1)
         self.menuBarTitle.move(0,0)
         self.menuBarTitle.setFont(QFont('Calibri', 8))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; ")
+        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
 
         self.btn_close = ButtonRed(self)
         self.btn_close.clicked.connect(self.btn_close_clicked)
@@ -365,6 +371,7 @@ class create_password(QWidget):
             self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             self.menuBarTitle.setText('  Confirm Password')
             if self.txtPasswordConfirm.text() == self.txtPassword.text():
+                self.menuBarTitle.setText('  Save Password')
                 self.btnCreatePassword.setEnabled(True)
                 self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
                 self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
@@ -400,12 +407,7 @@ class create_password(QWidget):
             # buttonReply = QMessageBox.information(self, 'Notice', "Password Saved!\nDo not forget this password!", QMessageBox.Ok, QMessageBox.Ok)
             self.m = MsgBox('Password Saved!\nDo not forget this password!', 'Notice!')
             self.m.show()
-            self.login_popup = Login()
-            self.login_popup.setFixedSize(width / 1.5, height / 2.5)
-            self.login_popup.setWindowTitle('Login')
-            self.login_popup.setStyleSheet(""" border: 2px solid #121212; border-radius: 1px;""")
-            self.login_popup.setWindowFlags(Qt.FramelessWindowHint)
-            self.login_popup.show()
+            
             self.close()
         
     def check_if_file_exists(self):
