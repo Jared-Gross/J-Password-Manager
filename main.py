@@ -25,10 +25,14 @@ import getpass, tempfile, os, json, re, pyperclip
 username = getpass.getuser()
 password_dir = tempfile.gettempdir() + '/JMP/'
 master_password = ''
-
+passwords = []
+keys = []
+site_names = []
+passwords_json = []
 class MainMenu(QMainWindow):
     def __init__(self):
         super().__init__()
+        app.setStyle("Fusion")
         palette = QPalette()
         palette.setColor(QPalette.Window, QColor(53, 53, 53))
         palette.setColor(QPalette.WindowText, Qt.white)
@@ -76,39 +80,126 @@ class MainMenu(QMainWindow):
         self.btn_min.setFont(QFont('Calibri', 20))
         self.btn_min.setToolTip('Minimize.')
         self.btn_min.setText('-')
-        
+
         self.txtSearch = LineEdit(self)
         self.txtSearch.move(7, 30)
         self.txtSearch.resize(self.width - (7 * 2), 30)
         self.txtSearch.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
-        # self.txtSearch.textChanged.connect(self.verify_text)
-        passwords = ['password', 'abc123', 'dragon', 'test', 'test2', 'test', 'test2']
-        site_names = ['google', 'microsoft', 'facebook', 'test', 'test2', 'test', 'test2']
+        self.txtSearch.textChanged.connect(self.refresh_password_list)
+        # global passwords, site_names
+        # passwords = ['password', 'abc123', 'dragon', 'test', 'test2', 'test', 'test2','password', 'abc123', 'dragon', 'test', 'test2', 'test', 'test2']
+        # site_names = ['google', 'microsoft', 'sdasad', 'test', 'test2', 'test', 'test2','google', 'microsoft', 'facebook', 'test', 'test2', 'test', 'test2']
+
+        self.btnLogout = ButtonGreen(self)
+        self.btnLogout.setText('Logout')
+        self.btnLogout.resize(100, 30)
+        self.btnLogout.move(self.width - 105, self.height - 35)
+        self.btnLogout.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        self.btnLogout.clicked.connect(self.logout)
+
+        self.btnAdd = ButtonGreen(self)
+        self.btnAdd.setText('Add Password')
+        self.btnAdd.resize(100, 30)
+        self.btnAdd.move(self.width - 205, self.height - 35)
+        self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        self.btnAdd.clicked.connect(self.add_password)
+
+        self.refresh_password_list()
+
+
+    def refresh_password_list(self):
         scroll = QScrollArea(self)
         scroll.move(7, 70)
-        scroll.resize(self.width - (7 * 2), 320)
+        scroll.resize(self.width - (7 * 2), 290)
         scroll.setWidgetResizable(True)
         self.content = QWidget()
         scroll.setWidget(self.content)
         lay = QGridLayout(self.content)
         # lay.setColumnStretch(0, 1)
-        x = 10
-        y = 1
+        y = 0
+        self.lblName = QLabel(self)
+        self.lblName.setText('Name:')
+        self.lblName.setAlignment(Qt.AlignRight)
+        self.lblName.setFont(QFont('Calibri', 14))
+        self.lblName.setStyleSheet("color: #008a11;")
+        lay.addWidget((self.lblName), y, 0)
+        self.lblPassword = QLabel(self)
+        self.lblPassword.setText('Passwords:')
+        self.lblPassword.setAlignment(Qt.AlignLeft)
+        self.lblPassword.setFont(QFont('Calibri', 14))
+        self.lblPassword.setStyleSheet("color: #144a85;")
+        lay.addWidget((self.lblPassword), y, 1)
         for i, j in enumerate(passwords):
-            y += 1
-            self.lblName = QLabel(self)
-            self.lblName.setText(site_names[i])
-            lay.addWidget((self.lblName), y, 0)
-            self.btnPassword = QPushButton(self)
-            self.btnPassword.setFlat(True)
-            self.btnPassword.setToolTip('Copy {} to Clipboard'.format(j))
-            self.btnPassword.setText(j)
-            text = partial(self.copy_password, self.btnPassword.text())
-            self.btnPassword.clicked.connect(text)
-            lay.addWidget((self.btnPassword), y, 1)
-        self.layout().addWidget(scroll)
-        # self.setStyleSheet("QScrollArea{width:100 px; height: 200 px}")
+            if self.txtSearch.text() == '':
+                y += 1
+                # LABEL START
+                self.lblWebsiteName = QLabel(self)
+                self.lblWebsiteName.setStyleSheet("color: #008a11;")
+                self.lblWebsiteName.setText(site_names[i])
+                self.lblWebsiteName.setAlignment(Qt.AlignRight | Qt.AlignCenter)
+                self.lblWebsiteName.setFont(QFont('Calibri', 11))
+                lay.addWidget((self.lblWebsiteName), y, 0)
+                # LABEL END
+                # TEXT START
+                self.btnPassword = QLineEdit(self)
+                self.btnPassword.setReadOnly(True)
+                self.btnPassword.setStyleSheet("background-color :#202020; text-align: left; color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+                self.btnPassword.setFont(QFont('Calibri', 11))
+                self.btnPassword.setEchoMode(QLineEdit.Password)
+                # self.btnPassword.setFlat(True)
+                self.btnPassword.setToolTip('{}'.format(j))
+                self.btnPassword.setText(j)
+                text = partial(self.copy_password, self.btnPassword.text())
+                # self.btnPassword.clicked.connect(text)
+                lay.addWidget((self.btnPassword), y, 1)
+                # TEXT END
+                # RAD BUTTON START
+                # self.chbxShow = QCheckBox(self)
+                # self.chbxShow.
+                # lay.addWidget((self.chbxShow), y, 2)
 
+                # RAD BUTTON END
+            elif self.txtSearch.text() in str(site_names[i]):
+                y += 1
+                # LABEL START
+                self.lblWebsiteName = QLabel(self)
+                self.lblWebsiteName.setStyleSheet("color: #008a11;")
+                self.lblWebsiteName.setText(site_names[i])
+                self.lblWebsiteName.setAlignment(Qt.AlignRight | Qt.AlignCenter)
+                self.lblWebsiteName.setFont(QFont('Calibri', 11))
+                lay.addWidget((self.lblWebsiteName), y, 0)
+                # LABEL END
+                # TEXT START
+                self.btnPassword = QLineEdit(self)
+                self.btnPassword.setReadOnly(True)
+                self.btnPassword.setStyleSheet("background-color :#202020; text-align: left; color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+                self.btnPassword.setFont(QFont('Calibri', 11))
+                self.btnPassword.setEchoMode(QLineEdit.Password)
+                # self.btnPassword.setFlat(True)
+                self.btnPassword.setToolTip('{}'.format(j))
+                self.btnPassword.setText(j)
+                text = partial(self.copy_password, self.btnPassword.text())
+                # self.btnPassword.clicked.connect(text)
+                lay.addWidget((self.btnPassword), y, 1)
+                # TEXT END
+                # RAD BUTTON START
+                # self.chbxShow = QCheckBox(self)
+                # self.chbxShow.
+                # lay.addWidget((self.chbxShow), y, 2)
+                lay.addWidget((self.btnPassword), y, 1)
+
+        self.layout().addWidget(scroll)
+        scroll.setStyleSheet("QScrollArea{background-color: #131313; border-radius: 3px;border-style: none; border: 1px solid black;}")
+        # lay.setStyleSheet("QGridLayout{border-radius: 3px;border-style: none; border: 1px solid darkblue;}")
+
+    def add_password(self):
+        self.addPopup = add_passwords()
+        self.addPopup.show()
+    def logout(self):
+        self.close()
+        self.login = Login()
+        self.login.setWindowTitle('Login')
+        self.login.show()
     def copy_password(self,b):
         pyperclip.copy(b)
         # self.create_master_password()
@@ -130,17 +221,171 @@ class MainMenu(QMainWindow):
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint (event.globalPos() - self.oldPos)
-        #print(delta)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
+        try:
+            delta = QPoint (event.globalPos() - self.oldPos)
+            #print(delta)
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+        except AttributeError:
+            print('oh no')
     # MOVE WINDOW END
-    
+
     def btn_close_clicked(self):
         self.close()
 
     def btn_min_clicked(self):
         self.showMinimized()
+
+
+class add_passwords(QDialog):
+    def __init__(self, parent=None):
+        super(add_passwords, self).__init__(parent)
+        self.title = title + ' ' + version
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
+        self.width = width / 1.5
+        self.height = height / 2
+        self.setFixedSize(self.width, self.height)
+
+        # TITLE BAR START
+        self.menuBarTitle = QLabel(self)
+        self.menuBarTitle.setText(self.title + ' - Add')
+        self.menuBarTitle.resize(self.width, btn_size + 1)
+        self.menuBarTitle.move(0,0)
+        self.menuBarTitle.setFont(QFont('Calibri', 10))
+        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
+
+        self.btn_close = ButtonRed(self)
+        self.btn_close.clicked.connect(self.close)
+        self.btn_close.resize(btn_size + 10,btn_size)
+        self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+        self.btn_close.move(self.width - (btn_size + 10),0)
+        self.btn_close.setFont(QFont('Calibri', 15))
+        self.btn_close.setToolTip('Close.')
+        self.btn_close.setText('X')
+
+        self.btn_min = ButtonGray(self)
+        self.btn_min.clicked.connect(self.showMinimized)
+        self.btn_min.resize(btn_size + 10, btn_size)
+        self.btn_min.setStyleSheet("background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
+        self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
+        self.btn_min.setFont(QFont('Calibri', 20))
+        self.btn_min.setToolTip('Minimize.')
+        self.btn_min.setText('-')
+        # TITLE BAR END
+        self.lblInfo = QLabel(self)
+        self.lblInfo.setText('Password:')
+        self.lblInfo.move(7, 105)
+
+        self.lblInfo = QLabel(self)
+        self.lblInfo.setText('Website:')
+        self.lblInfo.move(7, 55)
+        # self.lblInfo.resize(self.width - (7 * 2), 50)
+        # ADD ITEMS START
+        self.btnAdd = ButtonGreen(self)
+        self.btnAdd.setText('Add')
+        self.btnAdd.move(7, 160)
+        self.btnAdd.resize(self.width - (7 * 2), 30)
+        self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        self.btnAdd.setToolTip('Add Password.')
+        self.btnAdd.setFont(QFont('Calibri', 12))
+        self.btnAdd.clicked.connect(self.add)
+
+        self.txtWebsite = LineEdit(self)
+        self.txtWebsite.setToolTip('Your Website')
+        self.txtWebsite.move(7, 70)
+        self.txtWebsite.resize(self.width - (7 * 2), 30)
+        self.txtWebsite.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+        self.txtWebsite.textChanged.connect(self.verify_text)
+
+
+        self.txtPassword = LineEdit(self)
+        self.txtPassword.setEchoMode(QLineEdit.Password)
+        self.txtPassword.setToolTip('Your Password')
+        self.txtPassword.move(7, 120)
+        self.txtPassword.resize(self.width - (7 * 2), 30)
+        self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+        self.txtPassword.textChanged.connect(self.verify_text)
+        # ADD ITEMS END
+        self.verify_text()
+    def add(self):
+        global passwords_json, passwords, keys, site_names
+        # print(passwords_json)
+        temp_password = self.txtPassword.text()
+        temp_password = temp_password.encode('utf-8')
+        temp_password = base64.urlsafe_b64encode(temp_password)
+        temp_key = self.write_key()
+        key = self.load_key()
+        f = Fernet(key)
+        encrypted = f.encrypt(temp_password)
+
+        passwords_json['passwords'].append({
+            'site name': [self.txtWebsite.text()],
+            'key': [str(temp_key)],
+            'password': [str(encrypted)]
+        })
+        # Write to passwords file
+        with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
+            json.dump(passwords_json, file, ensure_ascii=False, indent=4)
+        # update added passwords
+        with open(password_dir + 'passwords.json') as file:
+            passwords_json = json.load(file)
+            for info in passwords_json['passwords']:
+                for password in info['password']:
+                    passwords.append(password)
+                for key in info['key']:
+                    keys.append(key)
+                for site in info['site name']:
+                    site_names.append(site)
+    def write_key(self):
+        key = Fernet.generate_key()
+        return key
+    def load_key(self):
+        return open(password_dir + "key.key", "rb").read()
+
+    def verify_text(self):
+        x = list(self.txtPassword.text())
+        y = list(self.txtWebsite.text())
+        # if not re.match(r'[A-Za-z0-9@#$%^&+=]{8,}', self.txtPassword.text()):
+
+        if len(x) > 0:
+            self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+        else:
+            self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+
+        if len(y) > 0:
+            self.txtWebsite.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+        else:
+            self.txtWebsite.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+
+        if len(x) > 0 and len(y) > 0:
+            self.btnAdd.setEnabled(True)
+            self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        else:
+            self.btnAdd.setEnabled(False)
+            self.btnAdd.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
+# MOVE WINDOW START
+    #center
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+        # BUTTON END
+    def mousePressEvent(self, event):
+        self.oldPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        try:
+            delta = QPoint (event.globalPos() - self.oldPos)
+            #print(delta)
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+        except AttributeError:
+            print('oh no')
+    # MOVE WINDOW END
+
+
 
 class Login(QDialog):
     def __init__(self, parent=None):
@@ -191,7 +436,7 @@ class Login(QDialog):
         self.btnLogin.setToolTip('Login to account.')
         self.btnLogin.setFont(QFont('Calibri', 12))
         self.btnLogin.clicked.connect(self.login)
-        
+
         self.txtPassword = LineEdit(self)
         self.txtPassword.setEchoMode(QLineEdit.Password)
         # self.txtPassword.setText('Password')
@@ -202,16 +447,16 @@ class Login(QDialog):
         self.txtPassword.textChanged.connect(self.verify_text)
         self.get_password()
         # lOGIN ITEMS END
-        
+
     def verify_text(self):
         x = list(self.txtPassword.text())
         if len(x) > 0:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
-            
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
             self.login()
-            
+
     def login(self):
         temp = self.txtPassword.text()
         key = load_key()
@@ -232,7 +477,7 @@ class Login(QDialog):
             self.close()
         else:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
-            
+
     def get_password(self):
         file = open(password_dir + "master.key", "rb")
         global master_password
@@ -255,7 +500,7 @@ class Login(QDialog):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
     # MOVE WINDOW END
-    
+
     def btn_close_clicked(self):
         self.close()
 
@@ -300,19 +545,19 @@ class MsgBox(QDialog):
         self.btn_min.setFont(QFont('Calibri', 20))
         self.btn_min.setToolTip('Minimize.')
         self.btn_min.setText('-')
-        
+
 
         self.lblMessage = QLabel(self)
         self.lblMessage.setText(message)
         self.lblMessage.move(7, 30)
-        
+
         self.btnOk = ButtonGreen(self)
         self.btnOk.setText('Ok')
         self.btnOk.clicked.connect(self.btn_proceed)
         self.btnOk.resize(btn_size + 20,btn_size)
         self.btnOk.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnOk.move(100,  60)
-    
+
     def btn_proceed(self):
         self.login_popup = Login()
         self.login_popup.setFixedSize(width / 1.5, height / 2.5)
@@ -389,10 +634,10 @@ class create_password(QDialog):
         self.btnCreatePassword.setToolTip('Create Password.')
         self.btnCreatePassword.setFont(QFont('Calibri', 12))
         self.btnCreatePassword.clicked.connect(self.create_master_password)
-        
+
         rx = QRegExp('[A-Za-z0-9@#$%^&+=]{8,}')
         validator = QRegExpValidator(rx, self)
-        
+
         self.txtPassword = LineEdit(self)
         # self.txtPassword.setValidator(validator)
         self.txtPassword.setEchoMode(QLineEdit.Password)
@@ -401,7 +646,7 @@ class create_password(QDialog):
         self.txtPassword.resize(self.width - (7 * 2), 30)
         self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
         self.txtPassword.textChanged.connect(self.verify_text)
-        
+
         self.txtPasswordConfirm = LineEdit(self)
         self.txtPasswordConfirm.setEchoMode(QLineEdit.Password)
         self.txtPasswordConfirm.setToolTip('Confirm Your Password')
@@ -412,7 +657,7 @@ class create_password(QDialog):
         self.verify_text()
         # self.create_master_password()
         # lOGIN ITEMS END
-        
+
     def verify_text(self):
         x = list(self.txtPassword.text())
         y = list(self.txtPasswordConfirm.text())
@@ -445,7 +690,7 @@ class create_password(QDialog):
         if event.key() == Qt.Key_Return:
             if len(x) >= 8 and len(y) >= 1 and  self.txtPasswordConfirm.text() == self.txtPassword.text() and self.btnCreatePassword.isEnabled():
                 self.create_master_password()
-                
+
     def create_master_password(self):
         global master_password
         if self.txtPasswordConfirm.text() == self.txtPassword.text():
@@ -465,13 +710,13 @@ class create_password(QDialog):
             # buttonReply = QMessageBox.information(self, 'Notice', "Password Saved!\nDo not forget this password!", QMessageBox.Ok, QMessageBox.Ok)
             self.m = MsgBox('Password Saved!\nDo not forget this password!', 'Notice!')
             self.m.show()
-            
+
             self.close()
-        
+
     def check_if_file_exists(self):
         if not os.path.exists(password_dir):
             os.makedirs(password_dir)
-            
+
         if not os.path.exists(password_dir + 'key.key'):
             file = open(password_dir + "key.key", "wb")
             file.write('')
@@ -498,7 +743,7 @@ class create_password(QDialog):
         self.move(self.x() + delta.x(), self.y() + delta.y())
         self.oldPos = event.globalPos()
     # MOVE WINDOW END
-    
+
     def btn_close_clicked(self):
         self.close()
 
@@ -524,7 +769,7 @@ class ButtonGreen(QToolButton):
             self.setStyleSheet("color: white; background-color: #109f00; border-radius: 3px; border-style: none;  font-weight: bold;  border: 1.4px solid black;")
         else:
             self.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
-            
+
     def leaveEvent(self,event):
         if self.isEnabled():
             self.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
@@ -572,8 +817,8 @@ def write_key():
         key_file.write(key)
 def load_key():
     return open(password_dir + "key.key", "rb").read()
-    
-    
+
+
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
@@ -581,7 +826,28 @@ if __name__ == '__main__':
     m.show()
     # if not os.path.exists(password_dir):
     #         os.makedirs(password_dir)
+    if os.path.exists(password_dir + 'passwords.json'):
+        with open(password_dir + 'passwords.json') as file:
+            passwords_json = json.load(file)
+            for info in passwords_json['passwords']:
+                for password in info['password']:
+                    passwords.append(password)
+                for key in info['key']:
+                    keys.append(key)
+                for site in info['site name']:
+                    site_names.append(site)
 
+    elif not os.path.exists(password_dir + 'password.json'):
+            file = open(password_dir + "passwords.json", "w")
+            file.write('''
+{
+    \"passwords\": [
+
+    ]
+}''')
+            file.close()
+            with open(password_dir + 'passwords.json') as file:
+                passwords_json = json.load(file)
     # if not os.path.exists(password_dir + 'key.key'):
     #     file = open(password_dir + "key.key", "w")
     #     file.write('')
