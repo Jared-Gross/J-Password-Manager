@@ -129,13 +129,23 @@ class MainMenu(QMainWindow):
         self.lblPassword.setFont(QFont('Calibri', 14))
         self.lblPassword.setStyleSheet("color: #144a85;")
         lay.addWidget((self.lblPassword), y, 1)
-        for i, j in enumerate(passwords):
+        for i, j in enumerate(site_names):
             if self.txtSearch.text() == '':
+                key = keys[i]
+                # key = key[2:-1]
+                key = key.encode('utf-8')
+                f = Fernet(key)
+                p = passwords[i]
+                # p = p[2:-1]
+                p = p.encode('utf-8')
+                decrypted_encrypted = f.decrypt(p)
+                decrypted_encrypted = base64.urlsafe_b64decode(decrypted_encrypted)
+                decrypted_encrypted = decrypted_encrypted.decode('utf-8')
                 y += 1
                 # LABEL START
                 self.lblWebsiteName = QLabel(self)
                 self.lblWebsiteName.setStyleSheet("color: #008a11;")
-                self.lblWebsiteName.setText(site_names[i])
+                self.lblWebsiteName.setText(j)
                 self.lblWebsiteName.setAlignment(Qt.AlignRight | Qt.AlignCenter)
                 self.lblWebsiteName.setFont(QFont('Calibri', 11))
                 lay.addWidget((self.lblWebsiteName), y, 0)
@@ -147,7 +157,7 @@ class MainMenu(QMainWindow):
                 self.btnPassword.setFont(QFont('Calibri', 11))
                 self.btnPassword.setEchoMode(QLineEdit.Password)
                 # self.btnPassword.setFlat(True)
-                self.btnPassword.setToolTip('{}'.format(j))
+                self.btnPassword.setToolTip('{}'.format(decrypted_encrypted))
                 self.btnPassword.setText(j)
                 text = partial(self.copy_password, self.btnPassword.text())
                 # self.btnPassword.clicked.connect(text)
@@ -315,9 +325,11 @@ class add_passwords(QDialog):
         temp_password = temp_password.encode('utf-8')
         temp_password = base64.urlsafe_b64encode(temp_password)
         temp_key = self.write_key()
+        temp_key = temp_key.decode('utf-8')
         key = self.load_key()
         f = Fernet(key)
         encrypted = f.encrypt(temp_password)
+        encrypted = encrypted.decode('utf-8')
 
         passwords_json['passwords'].append({
             'site name': [self.txtWebsite.text()],
