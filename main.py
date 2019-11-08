@@ -25,6 +25,7 @@ import getpass, tempfile, os, json, re, pyperclip
 username = getpass.getuser()
 password_dir = tempfile.gettempdir() + '/JMP/'
 master_password = ''
+usernames = []
 passwords = []
 keys = []
 site_names = []
@@ -104,7 +105,7 @@ class MainMenu(QMainWindow):
         self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnAdd.clicked.connect(self.add_password)
 
-        self.refresh_password_list()
+        # self.refresh_password_list()
 
 
     def refresh_password_list(self):
@@ -119,25 +120,29 @@ class MainMenu(QMainWindow):
         y = 0
         self.lblName = QLabel(self)
         self.lblName.setText('Name:')
-        self.lblName.setAlignment(Qt.AlignRight)
+        self.lblName.setAlignment(Qt.AlignLeft)
         self.lblName.setFont(QFont('Calibri', 14))
         self.lblName.setStyleSheet("color: #008a11;")
         lay.addWidget((self.lblName), y, 0)
+        
+        self.lblPassword = QLabel(self)
+        self.lblPassword.setText('Username:')
+        self.lblPassword.setAlignment(Qt.AlignLeft)
+        self.lblPassword.setFont(QFont('Calibri', 14))
+        self.lblPassword.setStyleSheet("color: #e0d725;")
+        lay.addWidget((self.lblPassword), y, 1)
+        
         self.lblPassword = QLabel(self)
         self.lblPassword.setText('Passwords:')
         self.lblPassword.setAlignment(Qt.AlignLeft)
         self.lblPassword.setFont(QFont('Calibri', 14))
         self.lblPassword.setStyleSheet("color: #144a85;")
-        lay.addWidget((self.lblPassword), y, 1)
+        lay.addWidget((self.lblPassword), y, 2)
         for i, j in enumerate(site_names):
             if self.txtSearch.text() == '':
-                key = keys[i]
-                # key = key[2:-1]
-                key = key.encode('utf-8')
-                f = Fernet(key)
-                p = passwords[i]
-                # p = p[2:-1]
-                p = p.encode('utf-8')
+                f = Fernet(keys[i].encode('utf-8'))
+                p = passwords[i].encode('utf-8')
+
                 decrypted_encrypted = f.decrypt(p)
                 decrypted_encrypted = base64.urlsafe_b64decode(decrypted_encrypted)
                 decrypted_encrypted = decrypted_encrypted.decode('utf-8')
@@ -151,17 +156,25 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.lblWebsiteName), y, 0)
                 # LABEL END
                 # TEXT START
-                self.btnPassword = QLineEdit(self)
-                self.btnPassword.setReadOnly(True)
-                self.btnPassword.setStyleSheet("background-color :#202020; text-align: left; color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
-                self.btnPassword.setFont(QFont('Calibri', 11))
-                self.btnPassword.setEchoMode(QLineEdit.Password)
-                # self.btnPassword.setFlat(True)
-                self.btnPassword.setToolTip('{}'.format(decrypted_encrypted))
-                self.btnPassword.setText(j)
+                self.txtPassword = QLineEdit(self)
+                self.txtPassword.setReadOnly(True)
+                self.txtPassword.setStyleSheet("background-color :#202020; text-align: left; color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+                self.txtPassword.setFont(QFont('Calibri', 11))
+                self.txtPassword.setEchoMode(QLineEdit.Password)
+                # self.txtPassword.setFlat(True)
+                self.txtPassword.setToolTip('{}'.format(decrypted_encrypted))
+                self.txtPassword.setText(j)
+                lay.addWidget((self.txtPassword), y, 2)
+                
+                self.txtUsername = QLineEdit(self)
+                self.txtUsername.setReadOnly(True)
+                self.txtUsername.setStyleSheet("background-color :#202020; text-align: left; color: #e0d725;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+                self.txtUsername.setFont(QFont('Calibri', 11))
+                self.txtUsername.setToolTip('{}'.format(decrypted_encrypted))
+                self.txtUsername.setText(j)
                 text = partial(self.copy_password, self.btnPassword.text())
                 # self.btnPassword.clicked.connect(text)
-                lay.addWidget((self.btnPassword), y, 1)
+                lay.addWidget((self.txtUsername), y, 1)
                 # TEXT END
                 # RAD BUTTON START
                 # self.chbxShow = QCheckBox(self)
@@ -254,7 +267,7 @@ class add_passwords(QDialog):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.width = width / 1.5
-        self.height = height / 2
+        self.height = height / 1.7
         self.setFixedSize(self.width, self.height)
 
         # TITLE BAR START
@@ -285,25 +298,36 @@ class add_passwords(QDialog):
         # TITLE BAR END
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Password:')
-        self.lblInfo.move(7, 105)
+        self.lblInfo.move(7, 145)
 
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Website:')
-        self.lblInfo.move(7, 55)
+        self.lblInfo.move(7, 95)
+        
+        self.lblInfo = QLabel(self)
+        self.lblInfo.setText('Username:')
+        self.lblInfo.move(7, 45)
         # self.lblInfo.resize(self.width - (7 * 2), 50)
         # ADD ITEMS START
         self.btnAdd = ButtonGreen(self)
         self.btnAdd.setText('Add')
-        self.btnAdd.move(7, 160)
+        self.btnAdd.move(7, 200)
         self.btnAdd.resize(self.width - (7 * 2), 30)
         self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnAdd.setToolTip('Add Password.')
         self.btnAdd.setFont(QFont('Calibri', 12))
         self.btnAdd.clicked.connect(self.add)
 
+        self.txtUsername = LineEdit(self)
+        self.txtUsername.setToolTip('Your Website')
+        self.txtUsername.move(7, 60)
+        self.txtUsername.resize(self.width - (7 * 2), 30)
+        self.txtUsername.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+        self.txtUsername.textChanged.connect(self.verify_text)
+
         self.txtWebsite = LineEdit(self)
         self.txtWebsite.setToolTip('Your Website')
-        self.txtWebsite.move(7, 70)
+        self.txtWebsite.move(7, 110)
         self.txtWebsite.resize(self.width - (7 * 2), 30)
         self.txtWebsite.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtWebsite.textChanged.connect(self.verify_text)
@@ -312,37 +336,41 @@ class add_passwords(QDialog):
         self.txtPassword = LineEdit(self)
         self.txtPassword.setEchoMode(QLineEdit.Password)
         self.txtPassword.setToolTip('Your Password')
-        self.txtPassword.move(7, 120)
+        self.txtPassword.move(7, 160)
         self.txtPassword.resize(self.width - (7 * 2), 30)
         self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtPassword.textChanged.connect(self.verify_text)
         # ADD ITEMS END
         self.verify_text()
     def add(self):
-        global passwords_json, passwords, keys, site_names
+        global passwords_json, passwords, keys, site_names, usernames
         # print(passwords_json)
         temp_password = self.txtPassword.text()
         temp_password = temp_password.encode('utf-8')
         temp_password = base64.urlsafe_b64encode(temp_password)
-        temp_key = self.write_key()
-        temp_key = temp_key.decode('utf-8')
+        temp_key = Fernet.generate_key()
+        temp_key = temp_key.decode('utf8').replace("'", '"')
         key = self.load_key()
         f = Fernet(key)
         encrypted = f.encrypt(temp_password)
-        encrypted = encrypted.decode('utf-8')
-
+        print(f.decrypt(encrypted))
+        encrypted = encrypted.decode('utf8').replace("'", '"')
         passwords_json['passwords'].append({
+            'username': [self.txtUsername.text()],
             'site name': [self.txtWebsite.text()],
-            'key': [str(temp_key)],
-            'password': [str(encrypted)]
-        })
+            'key': [temp_key],
+            'password': [encrypted]
+            }
+        )
         # Write to passwords file
         with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
-            json.dump(passwords_json, file, ensure_ascii=False, indent=4)
+            json.dump(passwords_json, file, ensure_ascii=False, indent=4, sort_keys=True)
         # update added passwords
         with open(password_dir + 'passwords.json') as file:
             passwords_json = json.load(file)
             for info in passwords_json['passwords']:
+                for username in info['username']:
+                    usernames.append(username)
                 for password in info['password']:
                     passwords.append(password)
                 for key in info['key']:
@@ -358,6 +386,7 @@ class add_passwords(QDialog):
     def verify_text(self):
         x = list(self.txtPassword.text())
         y = list(self.txtWebsite.text())
+        z = list(self.txtUsername.text())
         # if not re.match(r'[A-Za-z0-9@#$%^&+=]{8,}', self.txtPassword.text()):
 
         if len(x) > 0:
@@ -370,7 +399,12 @@ class add_passwords(QDialog):
         else:
             self.txtWebsite.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
 
-        if len(x) > 0 and len(y) > 0:
+        if len(z) > 0:
+            self.txtUsername.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+        else:
+            self.txtUsername.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+
+        if len(x) > 0 and len(y) > 0 and len(z) > 0:
             self.btnAdd.setEnabled(True)
             self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -842,6 +876,8 @@ if __name__ == '__main__':
         with open(password_dir + 'passwords.json') as file:
             passwords_json = json.load(file)
             for info in passwords_json['passwords']:
+                for username in info['username']:
+                    usernames.append(username)
                 for password in info['password']:
                     passwords.append(password)
                 for key in info['key']:
