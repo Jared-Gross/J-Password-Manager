@@ -257,6 +257,13 @@ class MainMenu(QMainWindow):
         self.lblPassword.setFont(QFont('Calibri', 14))
         self.lblPassword.setStyleSheet("color: #144a85;")
         lay.addWidget((self.lblPassword), 0, 2)
+        if not site_names:
+            self.lblError = QLabel(self)
+            self.lblError.setText('No passwords added.')
+            self.lblError.setAlignment(Qt.AlignLeft)
+            self.lblError.setFont(QFont('Calibri', 14))
+            self.lblError.setStyleSheet("color: #8b0000;")
+            lay.addWidget((self.lblError), 1, 1)
         for i, j in enumerate(site_names):
             if self.txtSearch.text() == '' or self.txtSearch.text() == ' ' or self.txtSearch.text() == None:
                 f = Fernet( keys[i].encode('utf-8'))
@@ -293,7 +300,6 @@ class MainMenu(QMainWindow):
                 self.txtPassword.setToolTip('{}'.format(decrypted_password))
                 self.txtPassword.setText(decrypted_password)
                 lay.addWidget((self.txtPassword), y, 2)
-
                 # BUTTON EDIT START
                 btnCopy = partial(self.copy_password, self.txtPassword.text())
                 self.btnCopy = ButtonGreen(self)
@@ -601,9 +607,8 @@ class add_passwords(QDialog):
 
 
         for x, j in enumerate(site_names):
-            print(j)
             if self.txtWebsite.text() in j:
-                self.m = MsgBox('"{}" is already exists,\nChoose a diffrent name!'.format(self.txtWebsite.text()), 'Oh oh!', False)
+                self.m = MsgBox('"{}" already exists, Choose\na diffrent website name!'.format(self.txtWebsite.text()), 'Oh oh!', False)
                 self.m.show()
                 return
         # print(passwords_json)
@@ -850,7 +855,7 @@ class MsgBox(QDialog):
         self.show_login = show_login
         self.title = msgtitle
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.width = width / 1.7
+        self.width = width / 1.5
         self.height = height / 4.5
         self.setFixedSize(self.width, self.height)
 
