@@ -78,7 +78,6 @@ class MainMenu(QMainWindow):
         self.btn_close.setFont(QFont('Calibri', 15))
         self.btn_close.setToolTip('Close.')
         self.btn_close.setIcon(QIcon('icons/exit.png'))
-
         self.btn_max = ButtonGreen(self)
         self.btn_max.clicked.connect(self.max)
         self.btn_max.resize(btn_size + 10, btn_size)
@@ -108,9 +107,6 @@ class MainMenu(QMainWindow):
         self.btnRefresh.setIcon(QIcon('icons/refresh.png'))
         self.btnRefresh.resize(30,30)
         self.btnRefresh.clicked.connect(self.refresh_password_list)
-        # global passwords, site_names
-        # passwords = ['password', 'abc123', 'dragon', 'test', 'test2', 'test', 'test2','password', 'abc123', 'dragon', 'test', 'test2', 'test', 'test2']
-        # site_names = ['google', 'microsoft', 'sdasad', 'test', 'test2', 'test', 'test2','google', 'microsoft', 'facebook', 'test', 'test2', 'test', 'test2']
 
         self.sizegrip = QSizeGrip(self)
         self.btnLogout = ButtonRed(self)
@@ -133,6 +129,13 @@ class MainMenu(QMainWindow):
         self.btnExport.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnExport.clicked.connect(self.export_passwords)
         self.btnExport.setToolTip('Export all files into a .csv file to view in excel.')
+
+        self.btnImport = ButtonGreen(self)
+        self.btnImport.setText('Import')
+        self.btnImport.resize(100, 30)
+        self.btnImport.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        self.btnImport.clicked.connect(self.import_passwords)
+        self.btnImport.setToolTip('Import passwords from .csv file.')
 
         self.scroll = QScrollArea(self)
 
@@ -159,14 +162,16 @@ class MainMenu(QMainWindow):
         self.txtSearch.resize(self.width - (7 * 2) - 35, 30)
         self.btnRefresh.move(self.width - (7 * 2) - 25, 30)
 
-        self.btnAdd.resize(self.width / self.num_of_lower_buttons - 10, 30)
-        self.btnAdd.move(5, self.height - 35)
+        self.btnExport.resize(self.width / self.num_of_lower_buttons - 10, 30)
+        self.btnExport.move(5, self.height - 35)
+
+        # self.btnImport
 
         self.btnLogout.resize(self.width / self.num_of_lower_buttons, 30)
         self.btnLogout.move(self.width / (self.num_of_lower_buttons / self.num_of_lower_buttons) - (self.width / self.num_of_lower_buttons) - 5, self.height - 35)
 
-        self.btnExport.resize(self.width / self.num_of_lower_buttons, 30)
-        self.btnExport.move(self.width / self.num_of_lower_buttons - 5, self.height - 35)
+        self.btnAdd.resize(self.width / self.num_of_lower_buttons, 30)
+        self.btnAdd.move(self.width / self.num_of_lower_buttons - 5, self.height - 35)
 
         self.scroll.resize(self.width - (7 * 2), self.height - 110)
         self.sizegrip.move(self.width - 10, self.height - 10)
@@ -202,9 +207,7 @@ class MainMenu(QMainWindow):
 
     def export_passwords(self):
         options = QFileDialog.Options()
-        # options.setAcceptMode(QFileDialog.AcceptSave)
-        # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Export","Passwords","Excell File (*.csv)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self,"Export","Passwords","Excel File (*.csv)", options=options)
         if fileName:
             if fileName.endswith('.csv'):
                 fileName = fileName.replace('.csv','')
@@ -226,6 +229,32 @@ class MainMenu(QMainWindow):
                     csv_file.writerow([site_names[i], usernames[i], passwords_list[i]])
             # fileName = fileName.rsplit('/', 1)[0]
             explore(fileName + '.csv')
+
+    def import_passwords(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(self,"Passwords", "Passwords","Excel File (*.csv)", options=options)
+        if fileName:
+            print(fileName)
+            csvfile = open(fileName, 'r')
+            jsonfile = open(password_dir + 'passwords.json', 'w')
+
+            fieldnames = ("site name","username","password")
+            reader = csv.DictReader(csvfile, fieldnames)
+            out = json.dumps([row for row in reader])
+            # out = out.replace("\\", '')
+            # jsonfile.write(out)
+
+            # with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
+            #     json.dump(out, file)
+
+            # with open(password_dir + 'passwords.json') as file:
+            passwords_json = json.loads(out)
+            # sort json file
+            sorted_obj = sorted(passwords_json, key=lambda x : x['site name'], reverse=False)
+            # Write to passwords file
+            with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
+                json.dump(sorted_obj, file, ensure_ascii=True, indent=4, sort_keys=True, separators=(',', ': '))
+
     def refresh_password_list(self):
         # scroll = QScrollArea(self)
         self.scroll.setStyleSheet("QScrollArea {background-color:white;}");
@@ -770,7 +799,7 @@ class Login(QDialog):
         self.btnLogin.setText('Login')
         self.btnLogin.move(7,self.height/1.3)
         self.btnLogin.resize(self.width - (7 * 2), 30)
-        self.btnLogin.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnLogin.setToolTip('Login to account.')
         self.btnLogin.setFont(QFont('Calibri', 12))
         self.btnLogin.clicked.connect(self.login)
@@ -783,6 +812,7 @@ class Login(QDialog):
         self.txtPassword.resize(self.width - (7 * 2), 30)
         self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtPassword.textChanged.connect(self.verify_text)
+        self.verify_text()
         self.get_password()
         self.txtPassword.setFocus()
         # lOGIN ITEMS END
@@ -791,6 +821,11 @@ class Login(QDialog):
         x = list(self.txtPassword.text())
         if len(x) > 0:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+            self.btnLogin.setEnabled(True)
+            self.btnLogin.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        else:
+            self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btnLogin.setEnabled(False)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
@@ -804,7 +839,7 @@ class Login(QDialog):
         decrypted_encrypted = f.decrypt(master_password)
         temp_master = base64.urlsafe_b64decode(decrypted_encrypted)
         temp_master = temp_master.decode('utf-8')
-
+        x = list(self.txtPassword.text())
         if temp == temp_master:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             QtTest.QTest.qWait(1000)
@@ -976,10 +1011,12 @@ class create_password(QDialog):
         self.btn_min.setToolTip('Minimize.')
         self.btn_min.setText('-')
         # TITLE BAR END
-        # self.lblInfo = QLabel(self)
-        # self.lblInfo.setText('Create a Password')
-        # self.lblInfo.move(7, 30)
-        # self.lblInfo.resize(self.width - (7 * 2), 50)
+        self.lblInfo = QLabel(self)
+        self.lblInfo.move(7, 27)
+        font = (QFont('Calibri', 8))
+        font.setItalic(True)
+        self.lblInfo.setFont(font)
+
         # LOGIN ITEMS START
         self.btnCreatePassword = ButtonGreen(self)
         self.btnCreatePassword.setText('Create')
@@ -1019,12 +1056,16 @@ class create_password(QDialog):
         # if not re.match(r'[A-Za-z0-9@#$%^&+=]{8,}', self.txtPassword.text()):
 
         if len(x) < 8:
+            self.lblInfo.setText(' Password must be greater than \n8 charecters.')
+            self.lblInfo.setStyleSheet("color: #8b0000")
             self.menuBarTitle.setText('  Create a Password')
             self.btnCreatePassword.setEnabled(False)
             self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
             self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
             self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
         elif len(x) >= 8:
+            self.lblInfo.setText(' Password is greater than \n8 charecters.')
+            self.lblInfo.setStyleSheet("color: #008a11")
             self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             self.menuBarTitle.setText('  Confirm Password')
             if self.txtPasswordConfirm.text() == self.txtPassword.text():
