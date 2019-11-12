@@ -141,7 +141,7 @@ class MainMenu(QMainWindow):
 
         self.sizegrip.setStyleSheet('''QSizeGrip {
             image: url("icons/exit.png");
-            //background-color: white;
+            background-color: black;
         }''')
         self.sizegrip.setCursor(QtCore.Qt.SplitVCursor)
         self.resized.connect(self.someFunction)
@@ -167,7 +167,7 @@ class MainMenu(QMainWindow):
 
         self.btnImport.resize(self.width / self.num_of_lower_buttons, 30)
         self.btnImport.move(self.width / self.num_of_lower_buttons - 5, self.height - 35)
-        
+
         self.btnAdd.resize(self.width / self.num_of_lower_buttons, 30)
         self.btnAdd.move(self.width / (self.num_of_lower_buttons / self.num_of_lower_buttons) - (self.width / self.num_of_lower_buttons)  - (self.width / self.num_of_lower_buttons) - 5, self.height - 35)
 
@@ -258,7 +258,7 @@ class MainMenu(QMainWindow):
             # Write to passwords file
             with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
                 json.dump(sorted_obj, file, ensure_ascii=True, indent=4, sort_keys=True, separators=(',', ': '))
-            
+
             with open(password_dir + 'passwords.json') as file:
                 passwords_json = json.load(file)
 
@@ -272,7 +272,7 @@ class MainMenu(QMainWindow):
             open(password_dir + 'passwords.json', "w").write(
                 json.dumps(passwords_json, sort_keys=True, indent=4, separators=(',', ': '))
                 )
-            
+
             temp_sitename = []
             temp_username = []
             temp_password = []
@@ -285,7 +285,7 @@ class MainMenu(QMainWindow):
                         temp_password.append(password)
                     for site in info['site name']:
                         temp_sitename.append(site)
-                
+
             file = open(password_dir + "passwords.json", "w+")
             file.write("[]")
             file.close()
@@ -374,7 +374,7 @@ class MainMenu(QMainWindow):
             self.lblError.setStyleSheet("color: #8b0000;")
             lay.addWidget((self.lblError), 1, 1)
         for i, j in enumerate(site_names):
-            if self.txtSearch.text() == '' or self.txtSearch.text() == ' ' or self.txtSearch.text() == None:
+            if self.txtSearch.text() == '':
                 f = Fernet( keys[i].encode('utf-8'))
                 p = passwords[i].encode('utf-8')
 
@@ -714,8 +714,8 @@ class add_passwords(QDialog):
             self.btnAdd.setToolTip('Add Password.')
             self.menuBarTitle.setText(self.title + ' - Add')
 
-        
-        
+
+
         with open(password_dir + 'passwords.json') as file:
             passwords_json = json.load(file)
         for x, j in enumerate(site_names):
