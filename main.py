@@ -40,7 +40,7 @@ class MainMenu(QMainWindow):
         self.title = title + ' ' + version
         self.width = width + 200
         self.height = height
-        self.num_of_lower_buttons = 3
+        self.num_of_lower_buttons = 4
 
         self.setMinimumSize(self.width, self.height)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -165,13 +165,15 @@ class MainMenu(QMainWindow):
         self.btnExport.resize(self.width / self.num_of_lower_buttons - 10, 30)
         self.btnExport.move(5, self.height - 35)
 
-        # self.btnImport
+        self.btnImport.resize(self.width / self.num_of_lower_buttons, 30)
+        self.btnImport.move(self.width / self.num_of_lower_buttons - 5, self.height - 35)
+        
+        self.btnAdd.resize(self.width / self.num_of_lower_buttons, 30)
+        self.btnAdd.move(self.width / (self.num_of_lower_buttons / self.num_of_lower_buttons) - (self.width / self.num_of_lower_buttons)  - (self.width / self.num_of_lower_buttons) - 5, self.height - 35)
 
         self.btnLogout.resize(self.width / self.num_of_lower_buttons, 30)
         self.btnLogout.move(self.width / (self.num_of_lower_buttons / self.num_of_lower_buttons) - (self.width / self.num_of_lower_buttons) - 5, self.height - 35)
 
-        self.btnAdd.resize(self.width / self.num_of_lower_buttons, 30)
-        self.btnAdd.move(self.width / self.num_of_lower_buttons - 5, self.height - 35)
 
         self.scroll.resize(self.width - (7 * 2), self.height - 110)
         self.sizegrip.move(self.width - 10, self.height - 10)
@@ -231,6 +233,7 @@ class MainMenu(QMainWindow):
             explore(fileName + '.csv')
 
     def import_passwords(self):
+        global passwords_json
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,"Passwords", "Passwords","Excel File (*.csv)", options=options)
         if fileName:
@@ -240,21 +243,98 @@ class MainMenu(QMainWindow):
 
             fieldnames = ("site name","username","password")
             reader = csv.DictReader(csvfile, fieldnames)
-            out = json.dumps([row for row in reader])
-            # out = out.replace("\\", '')
-            # jsonfile.write(out)
-
-            # with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
-            #     json.dump(out, file)
-
-            # with open(password_dir + 'passwords.json') as file:
+            try:
+                out = json.dumps([row for row in reader])
+            except:
+                return
+            # for row in reader:
+            #     out = json.dumps([row])
             passwords_json = json.loads(out)
+            for x in passwords_json:
+                for k in x.keys():
+                    x[k] = [x[k]]
             # sort json file
             sorted_obj = sorted(passwords_json, key=lambda x : x['site name'], reverse=False)
             # Write to passwords file
             with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
                 json.dump(sorted_obj, file, ensure_ascii=True, indent=4, sort_keys=True, separators=(',', ': '))
+            
+            with open(password_dir + 'passwords.json') as file:
+                passwords_json = json.load(file)
 
+            # DELETE ELEMENT START
+            for i in range(len(passwords_json)):
+                if(passwords_json[i]["site name"] == ['Site name']):
+                    if(passwords_json[i]["password"] == ['Password']):
+                        if(passwords_json[i]["username"] == ['Username']):
+                            passwords_json.pop(i)
+                            break
+            open(password_dir + 'passwords.json', "w").write(
+                json.dumps(passwords_json, sort_keys=True, indent=4, separators=(',', ': '))
+                )
+            
+            temp_sitename = []
+            temp_username = []
+            temp_password = []
+            with open(password_dir + 'passwords.json') as file:
+                passwords_json = json.load(file)
+                for info in passwords_json:
+                    for username in info['username']:
+                        temp_username.append(username)
+                    for password in info['password']:
+                        temp_password.append(password)
+                    for site in info['site name']:
+                        temp_sitename.append(site)
+                
+            file = open(password_dir + "passwords.json", "w+")
+            file.write("[]")
+            file.close()
+            with open(password_dir + 'passwords.json') as file:
+                passwords_json = json.load(file)
+            # ENCRPT PASSWORDS
+            for i, j in enumerate(temp_password):
+                temp_password = j
+                temp_password = temp_password.encode('utf-8')
+                temp_password = base64.urlsafe_b64encode(temp_password)
+                temp_key = Fernet.generate_key()
+                f = Fernet(temp_key)
+                temp_key = temp_key.decode('utf8')
+                encrypted = f.encrypt(temp_password)
+                # print(f.decrypt(encrypted))
+                encrypted = encrypted.decode('utf8')
+                passwords_json.append({
+                    'username': [temp_username[i]],
+                    'site name': [temp_sitename[i]],
+                    'key': [temp_key],
+                    'password': [encrypted]
+                    }
+                )
+                # sort json file
+                sorted_obj = sorted(passwords_json, key=lambda x : x['site name'], reverse=False)
+                # Write to passwords file
+                with open(password_dir + 'passwords.json', mode='w+', encoding='utf-8') as file:
+                    json.dump(sorted_obj, file, ensure_ascii=True, indent=4, sort_keys=True)
+
+                # update added passwords
+            with open(password_dir + 'passwords.json') as file:
+                passwords_json = json.load(file)
+                usernames.clear()
+                passwords.clear()
+                keys.clear()
+                site_names.clear()
+                for info in passwords_json:
+                    for username in info['username']:
+                        usernames.append(username)
+                    for password in info['password']:
+                        passwords.append(password)
+                    for key in info['key']:
+                        keys.append(key)
+                    for site in info['site name']:
+                        site_names.append(site)
+
+            with open(password_dir + 'passwords.json') as file:
+                passwords_json = json.load(file)
+            self.refresh_password_list()
     def refresh_password_list(self):
         # scroll = QScrollArea(self)
         self.scroll.setStyleSheet("QScrollArea {background-color:white;}");
@@ -634,7 +714,10 @@ class add_passwords(QDialog):
             self.btnAdd.setToolTip('Add Password.')
             self.menuBarTitle.setText(self.title + ' - Add')
 
-
+        
+        
+        with open(password_dir + 'passwords.json') as file:
+            passwords_json = json.load(file)
         for x, j in enumerate(site_names):
             if self.txtWebsite.text() in j:
                 self.m = MsgBox('"{}" already exists, Choose\na diffrent website name!'.format(self.txtWebsite.text()), 'Oh oh!', False)
