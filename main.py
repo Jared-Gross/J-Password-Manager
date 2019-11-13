@@ -60,7 +60,7 @@ class MainMenu(QMainWindow):
                 self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
             else:
                 self.menuBarTitle.setStyleSheet(" background-color: #dbdbdb; color: #0b2248; border: 1px solid black; ")
-                
+
             # self.menuBarTitle.clicked.connect(self.on_click)
             # self.menuBarTitle.doubleClicked.connect(self.on_doubleclick)
 
@@ -100,6 +100,13 @@ class MainMenu(QMainWindow):
         self.txtSearch.textChanged.connect(self.refresh_password_list)
         self.txtSearch.setToolTip('Search for password with the name of the website.')
         self.txtSearch.setText('')
+
+        self.dark_mode = QCheckBox(self)
+        self.dark_mode.setChecked(dark_theme)
+        self.dark_mode.move(8, 55)
+        self.dark_mode.setText('Dark mode')
+        self.dark_mode.setToolTip('Enable/Disable Dark mode')
+        self.dark_mode.stateChanged.connect(self.darkmode)
 
         if dark_theme:
             self.btnRefresh = ButtonGreen(self)
@@ -209,13 +216,26 @@ class MainMenu(QMainWindow):
         self.btnLogout.move(self.width / (self.num_of_lower_buttons / self.num_of_lower_buttons) - (self.width / self.num_of_lower_buttons) - 5, self.height - 35)
 
 
-        self.scroll.resize(self.width - (7 * 2), self.height - 110)
+        self.scroll.resize(self.width - (7 * 2), self.height - 120)
         self.sizegrip.move(self.width - 10, self.height - 10)
 
     @pyqtSlot()
     def on_click(self):
         print("Click")
 
+    def darkmode(self, state):
+        with open(password_dir + 'settings.json') as file:
+            settings = json.load(file)
+        if state == Qt.Checked:
+            new_settings = {
+                'darkmode': 'True'
+            }
+        else:
+            new_settings = {
+                'darkmode': 'False'
+            }
+        with open(password_dir + 'settings.json', mode='w+', encoding='utf-8') as file:
+            json.dump(new_settings, file, ensure_ascii=False, indent=4)
     @pyqtSlot()
     def on_doubleclick(self):
         self.max()
@@ -373,7 +393,7 @@ class MainMenu(QMainWindow):
         # scroll = QScrollArea(self)
         if dark_theme:
             self.scroll.setStyleSheet("QScrollArea {background-color:white;}");
-        self.scroll.move(7, 70)
+        self.scroll.move(7, 80)
         self.scroll.setWidgetResizable(True)
         self.content = QWidget()
         self.scroll.setWidget(self.content)
@@ -974,7 +994,7 @@ class Login(QDialog):
             self.menuBarImage.move(5, 5)
             self.menuBarImage.setPixmap(self.icon)
             self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
-                
+
             self.btn_close = ButtonRed(self)
             self.btn_close.clicked.connect(self.btn_close_clicked)
             self.btn_close.resize(btn_size + 10,btn_size)
@@ -1120,7 +1140,7 @@ class MsgBox(QDialog):
         if dark_theme:
             self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
-        
+
             # TITLE BAR START
             self.menuBarTitle = QLabel(self)
             self.menuBarTitle.setText('  ' + self.title)
@@ -1132,7 +1152,7 @@ class MsgBox(QDialog):
             self.menuBarImage.move(5, 5)
             self.menuBarImage.setPixmap(self.icon)
             self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
-            
+
             self.btn_close = ButtonRed(self)
             self.btn_close.clicked.connect(self.btn_proceed)
             self.btn_close.resize(btn_size + 10,btn_size)
@@ -1232,7 +1252,7 @@ class create_password(QDialog):
             self.menuBarImage.move(5, 5)
             self.menuBarImage.setPixmap(self.icon)
             self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
-                
+
 
             self.btn_close = ButtonRed(self)
             self.btn_close.clicked.connect(self.btn_close_clicked)
@@ -1306,7 +1326,7 @@ class create_password(QDialog):
 
         if len(x) < 8:
             self.lblInfo.setText(' Password must be greater than \n8 charecters.')
-            
+
             self.btnCreatePassword.setEnabled(False)
             if dark_theme:
                 self.menuBarTitle.setText('  Create a Password')
@@ -1533,6 +1553,22 @@ if __name__ == '__main__':
     # m.show()
     if not os.path.exists(password_dir):
             os.makedirs(password_dir)
+    if not os.path.exists(password_dir + 'settings.json'):
+        file = open(password_dir + "settings.json", "w")
+        file.write('''{
+    "darkmode": ["False"]
+}
+''')
+        file.close()
+    else:
+        with open(password_dir + 'settings.json') as file:
+            settings = json.load(file)
+            if settings['darkmode'] == 'False':
+                dark_theme = False
+            else:
+                dark_theme = True
+
+
     if os.path.exists(password_dir + 'passwords.json'):
         with open(password_dir + 'passwords.json') as file:
             passwords_json = json.load(file)
@@ -1552,6 +1588,7 @@ if __name__ == '__main__':
         file.close()
         with open(password_dir + 'passwords.json') as file:
             passwords_json = json.load(file)
+
     if not os.path.exists(password_dir + 'key.key'):
         file = open(password_dir + "key.key", "w")
         file.write('')
