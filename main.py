@@ -909,7 +909,8 @@ class Login(QDialog):
         super(Login, self).__init__(parent)
         self.title = title + ' ' + version
         self.setWindowFlags(Qt.FramelessWindowHint)
-        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
+        if dark_theme:
+            self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.width = width / 1.5
         self.height = height / 2.5
         self.setFixedSize(self.width, self.height)
@@ -945,22 +946,26 @@ class Login(QDialog):
         self.lblInfo.move(7, 60)
         # self.lblInfo.resize(self.width - (7 * 2), 50)
         # LOGIN ITEMS START
-        self.btnLogin = ButtonGreen(self)
+        if dark_theme:
+            self.btnLogin = ButtonGreen(self)
+            self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
+        else:
+            self.btnLogin = QPushButton(self)
         self.btnLogin.setText('Login')
         self.btnLogin.move(7,self.height/1.3)
         self.btnLogin.resize(self.width - (7 * 2), 30)
-        self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnLogin.setToolTip('Login to account.')
         self.btnLogin.setFont(QFont('Calibri', 12))
         self.btnLogin.clicked.connect(self.login)
 
         self.txtPassword = LineEdit(self)
+        if dark_theme:
+            self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtPassword.setEchoMode(QLineEdit.Password)
         # self.txtPassword.setText('Password')
         self.txtPassword.setToolTip('Your Password')
         self.txtPassword.move(7, self.height / 2)
         self.txtPassword.resize(self.width - (7 * 2), 30)
-        self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtPassword.textChanged.connect(self.verify_text)
         self.verify_text()
         self.get_password()
@@ -970,12 +975,17 @@ class Login(QDialog):
     def verify_text(self):
         x = list(self.txtPassword.text())
         if len(x) > 0:
-            self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+            if dark_theme:
+                self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
+            else:
+                self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkblue;")
             self.btnLogin.setEnabled(True)
-            self.btnLogin.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+            if dark_theme:
+                self.btnLogin.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
-            self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
             self.btnLogin.setEnabled(False)
+            if dark_theme:
+                self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
@@ -991,7 +1001,11 @@ class Login(QDialog):
         temp_master = temp_master.decode('utf-8')
         x = list(self.txtPassword.text())
         if temp == temp_master:
-            self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+            if dark_theme:
+                self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+            else:
+                self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+
             QtTest.QTest.qWait(1000)
             self.main = MainMenu()
             self.main.setWindowTitle('Main')
@@ -1000,7 +1014,11 @@ class Login(QDialog):
             self.main.show()
             self.close()
         else:
-            self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+            if dark_theme:
+                self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+            else:
+                self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
+
 
     def get_password(self):
         file = open(password_dir + "master.key", "rb")
@@ -1044,7 +1062,8 @@ class MsgBox(QDialog):
         self.height = height / 4.5
         self.setFixedSize(self.width, self.height)
 
-        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
+        if dark_theme:
+            self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         # TITLE BAR START
         self.menuBarTitle = QLabel(self)
         self.menuBarTitle.setText('  ' + self.title)
@@ -1076,13 +1095,16 @@ class MsgBox(QDialog):
         self.lblMessage.setText(message)
         self.lblMessage.move(7, 30)
 
-        self.btnOk = ButtonGreen(self)
+        if dark_theme:
+            self.btnOk = ButtonGreen(self)
+            self.btnOk.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        else:
+            self.btnOk = QPushButton(self)
         self.btnOk.setText('Ok')
         if self.show_login:
             self.btnOk.clicked.connect(self.btn_proceed)
         else:
             self.btnOk.clicked.connect(self.close)
-        self.btnOk.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnOk.move(5,  60)
         self.btnOk.resize(self.width - 10, btn_size)
 
@@ -1134,7 +1156,8 @@ class create_password(QDialog):
         self.height = height / 2.5
         self.setFixedSize(self.width, self.height)
 
-        self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
+        if dark_theme:
+            self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         # TITLE BAR START
         self.menuBarTitle = QLabel(self)
         self.menuBarTitle.setText('  Create a Password')
@@ -1168,11 +1191,14 @@ class create_password(QDialog):
         self.lblInfo.setFont(font)
 
         # LOGIN ITEMS START
-        self.btnCreatePassword = ButtonGreen(self)
+        if dark_theme:
+            self.btnCreatePassword = ButtonGreen(self)
+            self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+        else:
+            self.btnCreatePassword = QPushButton(self)
         self.btnCreatePassword.setText('Create')
         self.btnCreatePassword.move(7,self.height / 1.3)
         self.btnCreatePassword.resize(self.width - (7 * 2), 30)
-        self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         self.btnCreatePassword.setToolTip('Create Password.')
         self.btnCreatePassword.setFont(QFont('Calibri', 12))
         self.btnCreatePassword.clicked.connect(self.create_master_password)
@@ -1186,7 +1212,8 @@ class create_password(QDialog):
         self.txtPassword.setToolTip('Create a Password')
         self.txtPassword.move(7, self.height / 3)
         self.txtPassword.resize(self.width - (7 * 2), 30)
-        self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+        if dark_theme:
+            self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
         self.txtPassword.textChanged.connect(self.verify_text)
 
         self.txtPasswordConfirm = LineEdit(self)
@@ -1194,7 +1221,8 @@ class create_password(QDialog):
         self.txtPasswordConfirm.setToolTip('Confirm Your Password')
         self.txtPasswordConfirm.move(7, self.height / 1.8)
         self.txtPasswordConfirm.resize(self.width - (7 * 2), 30)
-        self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+        if dark_theme:
+            self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
         self.txtPasswordConfirm.textChanged.connect(self.verify_text)
         self.verify_text()
         # self.create_master_password()
@@ -1207,28 +1235,45 @@ class create_password(QDialog):
 
         if len(x) < 8:
             self.lblInfo.setText(' Password must be greater than \n8 charecters.')
-            self.lblInfo.setStyleSheet("color: #8b0000")
             self.menuBarTitle.setText('  Create a Password')
             self.btnCreatePassword.setEnabled(False)
-            self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
-            self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
-            self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+            if dark_theme:
+                self.lblInfo.setStyleSheet("color: #8b0000")
+                self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
+                self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+                self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+            else:
+                self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
+                self.txtPasswordConfirm.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
+
         elif len(x) >= 8:
             self.lblInfo.setText(' Password is greater than \n8 charecters.')
-            self.lblInfo.setStyleSheet("color: #008a11")
-            self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+            if dark_theme:
+                self.lblInfo.setStyleSheet("color: #008a11")
+                self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+            else:
+                self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+
             self.menuBarTitle.setText('  Confirm Password')
             if self.txtPasswordConfirm.text() == self.txtPassword.text():
                 self.menuBarTitle.setText('  Save Password')
                 self.btnCreatePassword.setEnabled(True)
-                self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
-                self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+                if dark_theme:
+                    self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+                    self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+                else:
+                    self.txtPasswordConfirm.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
+
             else:
                 if len(y) >= 1:
                     self.menuBarTitle.setText('  Password Doesn\'t Match')
-                self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
                 self.btnCreatePassword.setEnabled(False)
-                self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+                if dark_theme:
+                    self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
+                    self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
+                else:
+                    self.txtPasswordConfirm.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
+
 
     def keyPressEvent(self, event):
         x = list(self.txtPassword.text())
