@@ -11,7 +11,7 @@ from functools import partial
 from cryptography.fernet import Fernet
 import base64
 
-title = '  JPM'
+title = '       JPM'
 version = 'v0.1'
 width = 300
 height = 400
@@ -46,41 +46,51 @@ class MainMenu(QMainWindow):
         self.num_of_lower_buttons = 4
 
         self.setMinimumSize(self.width, self.height)
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        if dark_theme:
+            self.menuBarTitle = QLabel(self)
+            self.setWindowFlags(Qt.FramelessWindowHint)
+            # TITLE BAR START
+            self.menuBarImage = QLabel(self)
+            self.menuBarTitle.setText(self.title)
+            self.menuBarTitle.move(0,0)
+            self.icon = QPixmap('icons/icon.png')
+            self.menuBarImage.move(5, 0)
+            self.menuBarImage.setPixmap(self.icon)
+            if dark_theme:
+                self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
+            else:
+                self.menuBarTitle.setStyleSheet(" background-color: #dbdbdb; color: #0b2248; border: 1px solid black; ")
+                
+            # self.menuBarTitle.clicked.connect(self.on_click)
+            # self.menuBarTitle.doubleClicked.connect(self.on_doubleclick)
 
-        # TITLE BAR START
-        self.menuBarTitle = QLabel(self)
-        self.menuBarTitle.setText(self.title)
-        self.menuBarTitle.move(0,0)
-        self.menuBarTitle.setStyleSheet("text-align:left; background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
-        # self.menuBarTitle.clicked.connect(self.on_click)
-        # self.menuBarTitle.doubleClicked.connect(self.on_doubleclick)
 
+            self.btn_close = ButtonRed(self)
+            self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+            self.btn_close.clicked.connect(self.close)
+            self.btn_close.resize(btn_size + 10,btn_size)
+            self.btn_close.setFont(QFont('Calibri', 15))
+            self.btn_close.setToolTip('Close.')
+            self.btn_close.setIcon(QIcon('icons/exit.png'))
 
-        self.btn_close = ButtonRed(self)
-        self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
-        self.btn_close.clicked.connect(self.close)
-        self.btn_close.resize(btn_size + 10,btn_size)
-        self.btn_close.setFont(QFont('Calibri', 15))
-        self.btn_close.setToolTip('Close.')
-        self.btn_close.setIcon(QIcon('icons/exit.png'))
+            self.btn_max = ButtonGreen(self)
+            self.btn_max.setStyleSheet("background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btn_max.clicked.connect(self.max)
+            self.btn_max.resize(btn_size + 10, btn_size)
+            self.btn_max.setFont(QFont('Calibri', 20))
+            self.btn_max.setToolTip('Maximize.')
+            self.btn_max.setIcon(QIcon('icons/max.png'))
 
-        self.btn_max = ButtonGreen(self)
-        self.btn_max.setStyleSheet("background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
-        self.btn_max.clicked.connect(self.max)
-        self.btn_max.resize(btn_size + 10, btn_size)
-        self.btn_max.setFont(QFont('Calibri', 20))
-        self.btn_max.setToolTip('Maximize.')
-        self.btn_max.setIcon(QIcon('icons/max.png'))
-
-        self.btn_min = ButtonYellow(self)
-        self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
-        self.btn_min.clicked.connect(self.showMinimized)
-        self.btn_min.resize(btn_size + 10, btn_size)
-        self.btn_min.setFont(QFont('Calibri', 20))
-        self.btn_min.setToolTip('Minimize.')
-        self.btn_min.setText('-')
-
+            self.btn_min = ButtonYellow(self)
+            self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btn_min.clicked.connect(self.showMinimized)
+            self.btn_min.resize(btn_size + 10, btn_size)
+            self.btn_min.setFont(QFont('Calibri', 20))
+            self.btn_min.setToolTip('Minimize.')
+            self.btn_min.setText('-')
+        else:
+            self.setWindowIcon(QIcon('icons/icon.png'))
+            self.setWindowTitle(self.title)
         if dark_theme:
             self.txtSearch = LineEdit(self)
             self.txtSearch.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
@@ -178,11 +188,11 @@ class MainMenu(QMainWindow):
         self.width = w
         # print(str(self.w) + ' x ' + str(self.h))
         # self.resize(200, 200)
-
-        self.menuBarTitle.resize(self.width, btn_size + 1)
-        self.btn_close.move(self.width - (btn_size + 10),0)
-        self.btn_max.move(self.width - (btn_size + btn_size + 20),0)
-        self.btn_min.move(self.width - (btn_size + btn_size + btn_size + 30),0)
+        if dark_theme:
+            self.menuBarTitle.resize(self.width, btn_size + 1)
+            self.btn_close.move(self.width - (btn_size + 10),0)
+            self.btn_max.move(self.width - (btn_size + btn_size + 20),0)
+            self.btn_min.move(self.width - (btn_size + btn_size + btn_size + 30),0)
         self.txtSearch.resize(self.width - (7 * 2) - 35, 30)
         self.btnRefresh.move(self.width - (7 * 2) - 25, 30)
 
@@ -443,29 +453,38 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.txtPassword), y, 2)
                 # BUTTON EDIT START
                 btnCopy = partial(self.copy_password, self.txtPassword.text())
-                self.btnCopy = ButtonGreen(self)
+                if dark_theme:
+                    self.btnCopy = ButtonGreen(self)
+                    self.btnCopy.setStyleSheet("text-align: center;background-color: #008a11; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                else:
+                    self.btnCopy = QPushButton(self)
                 self.btnCopy.setIcon(QIcon('icons/copy.png'))
                 self.btnCopy.resize(30,30)
-                self.btnCopy.setStyleSheet("text-align: center;background-color: #008a11; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 self.btnCopy.setToolTip('Copy "{}"'.format(self.txtPassword.text()))
                 self.btnCopy.clicked.connect(btnCopy)
                 lay.addWidget((self.btnCopy), y, 3)
 
                 btnEdit = partial(self.edit_password, self.txtUsername.text(), self.txtWebsite.text(), self.txtPassword.text())
-                self.btnEdit = ButtonBlue(self)
-                self.btnEdit.setIcon(QIcon('icons/edit.png'))
+                if dark_theme:
+                    self.btnEdit = ButtonBlue(self)
+                    self.btnEdit.setStyleSheet("text-align: center;background-color: #144a85; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                else:
+                    self.btnEdit = QPushButton(self)
                 self.btnEdit.resize(30,30)
-                self.btnEdit.setStyleSheet("text-align: center;background-color: #144a85; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                self.btnEdit.setIcon(QIcon('icons/edit.png'))
                 self.btnEdit.setToolTip('Edit "{}"'.format(self.txtWebsite.text()))
                 self.btnEdit.clicked.connect(btnEdit)
                 lay.addWidget((self.btnEdit), y, 4)
                 # BUTTON EDIT END
                 # BUTTON DELETE START
                 btnDelete = partial(self.delete_password, self.txtWebsite.text())
-                self.btnDelete = ButtonRed(self)
+                if dark_theme:
+                    self.btnDelete = ButtonRed(self)
+                    self.btnDelete.setStyleSheet("text-align: center;background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                else:
+                    self.btnDelete = QPushButton(self)
                 self.btnDelete.setIcon(QIcon('icons/delete.png'))
                 self.btnDelete.resize(30,30)
-                self.btnDelete.setStyleSheet("text-align: center;background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 self.btnDelete.setToolTip('Delete "{}"'.format(self.txtWebsite.text()))
                 self.btnDelete.clicked.connect(btnDelete)
                 lay.addWidget((self.btnDelete), y, 5)
@@ -508,36 +527,44 @@ class MainMenu(QMainWindow):
                 self.txtPassword.setToolTip('{}'.format(decrypted_password))
                 self.txtPassword.setText(decrypted_password)
                 lay.addWidget((self.txtPassword), y, 2)
-
                 # BUTTON EDIT START
                 btnCopy = partial(self.copy_password, self.txtPassword.text())
-                self.btnCopy = ButtonGreen(self)
+                if dark_theme:
+                    self.btnCopy = ButtonGreen(self)
+                    self.btnCopy.setStyleSheet("text-align: center;background-color: #008a11; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                else:
+                    self.btnCopy = QPushButton(self)
                 self.btnCopy.setIcon(QIcon('icons/copy.png'))
                 self.btnCopy.resize(30,30)
-                self.btnCopy.setStyleSheet("text-align: center;background-color: #008a11; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 self.btnCopy.setToolTip('Copy "{}"'.format(self.txtPassword.text()))
                 self.btnCopy.clicked.connect(btnCopy)
                 lay.addWidget((self.btnCopy), y, 3)
 
                 btnEdit = partial(self.edit_password, self.txtUsername.text(), self.txtWebsite.text(), self.txtPassword.text())
-                self.btnEdit = ButtonBlue(self)
-                self.btnEdit.setIcon(QIcon('icons/edit.png'))
+                if dark_theme:
+                    self.btnEdit = ButtonBlue(self)
+                    self.btnEdit.setStyleSheet("text-align: center;background-color: #144a85; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                else:
+                    self.btnEdit = QPushButton(self)
                 self.btnEdit.resize(30,30)
-                self.btnEdit.setStyleSheet("text-align: center;background-color: #144a85; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                self.btnEdit.setIcon(QIcon('icons/edit.png'))
                 self.btnEdit.setToolTip('Edit "{}"'.format(self.txtWebsite.text()))
                 self.btnEdit.clicked.connect(btnEdit)
                 lay.addWidget((self.btnEdit), y, 4)
                 # BUTTON EDIT END
                 # BUTTON DELETE START
                 btnDelete = partial(self.delete_password, self.txtWebsite.text())
-                self.btnDelete = ButtonRed(self)
-                self.btnDelete.setIcon(QIcon('icons/exit.png'))
+                if dark_theme:
+                    self.btnDelete = ButtonRed(self)
+                    self.btnDelete.setStyleSheet("text-align: center;background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+                else:
+                    self.btnDelete = QPushButton(self)
+                self.btnDelete.setIcon(QIcon('icons/delete.png'))
                 self.btnDelete.resize(30,30)
-                self.btnDelete.setStyleSheet("text-align: center;background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 self.btnDelete.setToolTip('Delete "{}"'.format(self.txtWebsite.text()))
                 self.btnDelete.clicked.connect(btnDelete)
                 lay.addWidget((self.btnDelete), y, 5)
-                # BUTTON DELETE END
+                # BUTTON END
         self.layout().addWidget(self.scroll)
         if dark_theme:
             self.scroll.setStyleSheet("QScrollArea{background-color: #131313; border-radius: 3px;border-style: none; border: 1px solid black;}")
@@ -545,6 +572,7 @@ class MainMenu(QMainWindow):
 
     def edit_password(self, u, w, p):
         self.addPopup = add_passwords(u,w,p, True)
+        self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.addPopup.show()
     def delete_password(self, name):
         with open(password_dir + 'passwords.json') as file:
@@ -576,14 +604,17 @@ class MainMenu(QMainWindow):
                     site_names.append(site)
 
         self.m = MsgBox('Password Deleted!', 'Success!', False)
+        self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.m.show()
         self.refresh_password_list()
     def add_password(self):
         self.addPopup = add_passwords('','','', False)
+        self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.addPopup.show()
     def logout(self):
         self.close()
         self.login = Login()
+        self.login.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
         self.login.setWindowTitle('Login')
         self.login.show()
     def copy_password(self,b):
@@ -621,42 +652,55 @@ class add_passwords(QDialog):
         self.name = w
         self.delete = delete_password
         self.title = title + ' ' + version
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         if dark_theme:
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.width = width / 1.5
         self.height = height / 1.7
         self.setFixedSize(self.width, self.height)
+        if dark_theme:
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+            # TITLE BAR START
+            self.menuBarTitle = QLabel(self)
+            if self.delete:
+                if dark_theme:
+                    self.menuBarTitle.setText(self.title + ' - Change')
+                else:
+                    self.setWindowTitle(self.title + ' - Change')
+            else:
+                if dark_theme:
+                    self.menuBarTitle.setText(self.title + ' - Add')
+                else:
+                    self.setWindowTitle(self.title + ' - Add')
 
-        # TITLE BAR START
-        self.menuBarTitle = QLabel(self)
-        if self.delete:
-            self.menuBarTitle.setText(self.title + ' - Change')
+            self.menuBarTitle.resize(self.width, btn_size + 1)
+            self.menuBarTitle.move(0,0)
+            self.menuBarTitle.setFont(QFont('Calibri', 10))
+            self.menuBarImage = QLabel(self)
+            self.icon = QPixmap('icons/icon.png')
+            self.menuBarImage.move(5, 5)
+            self.menuBarImage.setPixmap(self.icon)
+            self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
+
+            self.btn_close = ButtonRed(self)
+            self.btn_close.clicked.connect(self.close)
+            self.btn_close.resize(btn_size + 10,btn_size)
+            self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+            self.btn_close.move(self.width - (btn_size + 10),0)
+            self.btn_close.setFont(QFont('Calibri', 15))
+            self.btn_close.setToolTip('Close.')
+            self.btn_close.setIcon(QIcon('icons/exit.png'))
+
+            self.btn_min = ButtonYellow(self)
+            self.btn_min.clicked.connect(self.showMinimized)
+            self.btn_min.resize(btn_size + 10, btn_size)
+            self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
+            self.btn_min.setFont(QFont('Calibri', 20))
+            self.btn_min.setToolTip('Minimize.')
+            self.btn_min.setText('-')
         else:
-            self.menuBarTitle.setText(self.title + ' - Add')
-
-        self.menuBarTitle.resize(self.width, btn_size + 1)
-        self.menuBarTitle.move(0,0)
-        self.menuBarTitle.setFont(QFont('Calibri', 10))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
-
-        self.btn_close = ButtonRed(self)
-        self.btn_close.clicked.connect(self.close)
-        self.btn_close.resize(btn_size + 10,btn_size)
-        self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
-        self.btn_close.move(self.width - (btn_size + 10),0)
-        self.btn_close.setFont(QFont('Calibri', 15))
-        self.btn_close.setToolTip('Close.')
-        self.btn_close.setIcon(QIcon('icons/exit.png'))
-
-        self.btn_min = ButtonYellow(self)
-        self.btn_min.clicked.connect(self.showMinimized)
-        self.btn_min.resize(btn_size + 10, btn_size)
-        self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
-        self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
-        self.btn_min.setFont(QFont('Calibri', 20))
-        self.btn_min.setToolTip('Minimize.')
-        self.btn_min.setText('-')
+            self.setWindowIcon(QIcon('icons/icon.png'))
+            self.setWindowTitle(self.title)
         # TITLE BAR END
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Password:')
@@ -755,7 +799,10 @@ class add_passwords(QDialog):
 
             self.btnAdd.setText('Add')
             self.btnAdd.setToolTip('Add Password.')
-            self.menuBarTitle.setText(self.title + ' - Add')
+            if dark_theme:
+                self.menuBarTitle.setText(self.title + ' - Add')
+            else:
+                self.setWindowTitle(self.title + ' - Add')
 
 
 
@@ -809,11 +856,13 @@ class add_passwords(QDialog):
 
         if self.delete:
             self.m = MsgBox('Password Changed!', 'Success!', False)
+            self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
             self.m.show()
             self.delete = False
             # self.close()
         else:
             self.m = MsgBox('Password Added!', 'Success!', False)
+            self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
             self.m.show()
     def write_key(self):
         key = Fernet.generate_key()
@@ -881,7 +930,7 @@ class add_passwords(QDialog):
         if event.key() == Qt.Key_Return:
             if len(x) >= 0 and len(y) >= 0 and  len(y) > 0:
                 self.add()
-# MOVE WINDOW START
+    # MOVE WINDOW START
     #center
     def center(self):
         qr = self.frameGeometry()
@@ -908,38 +957,45 @@ class Login(QDialog):
     def __init__(self, parent=None):
         super(Login, self).__init__(parent)
         self.title = title + ' ' + version
-        self.setWindowFlags(Qt.FramelessWindowHint)
-        if dark_theme:
-            self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.width = width / 1.5
         self.height = height / 2.5
-        self.setFixedSize(self.width, self.height)
+        if dark_theme:
+            self.setWindowFlags(Qt.FramelessWindowHint)
+            self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
+            self.setFixedSize(self.width, self.height)
+            # TITLE BAR START
+            self.menuBarTitle = QLabel(self)
+            self.menuBarTitle.setText(self.title + ' - Login')
+            self.menuBarTitle.resize(self.width, btn_size + 1)
+            self.menuBarTitle.move(0,0)
+            self.menuBarTitle.setFont(QFont('Calibri', 10))
+            self.menuBarImage = QLabel(self)
+            self.icon = QPixmap('icons/icon.png')
+            self.menuBarImage.move(5, 5)
+            self.menuBarImage.setPixmap(self.icon)
+            self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
+                
+            self.btn_close = ButtonRed(self)
+            self.btn_close.clicked.connect(self.btn_close_clicked)
+            self.btn_close.resize(btn_size + 10,btn_size)
+            self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+            self.btn_close.move(self.width - (btn_size + 10),0)
+            self.btn_close.setFont(QFont('Calibri', 15))
+            self.btn_close.setToolTip('Close.')
+            self.btn_close.setIcon(QIcon('icons/exit.png'))
 
-        # TITLE BAR START
-        self.menuBarTitle = QLabel(self)
-        self.menuBarTitle.setText(self.title + ' - Login')
-        self.menuBarTitle.resize(self.width, btn_size + 1)
-        self.menuBarTitle.move(0,0)
-        self.menuBarTitle.setFont(QFont('Calibri', 10))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
-
-        self.btn_close = ButtonRed(self)
-        self.btn_close.clicked.connect(self.btn_close_clicked)
-        self.btn_close.resize(btn_size + 10,btn_size)
-        self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
-        self.btn_close.move(self.width - (btn_size + 10),0)
-        self.btn_close.setFont(QFont('Calibri', 15))
-        self.btn_close.setToolTip('Close.')
-        self.btn_close.setIcon(QIcon('icons/exit.png'))
-
-        self.btn_min = ButtonYellow(self)
-        self.btn_min.clicked.connect(self.btn_min_clicked)
-        self.btn_min.resize(btn_size + 10, btn_size)
-        self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
-        self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
-        self.btn_min.setFont(QFont('Calibri', 20))
-        self.btn_min.setToolTip('Minimize.')
-        self.btn_min.setText('-')
+            self.btn_min = ButtonYellow(self)
+            self.btn_min.clicked.connect(self.btn_min_clicked)
+            self.btn_min.resize(btn_size + 10, btn_size)
+            self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
+            self.btn_min.setFont(QFont('Calibri', 20))
+            self.btn_min.setToolTip('Minimize.')
+            self.btn_min.setText('-')
+        else:
+            self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
+            self.setWindowIcon(QIcon('icons/icon.png'))
+            self.setWindowTitle(self.title)
         # TITLE BAR END
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Password:')
@@ -952,7 +1008,7 @@ class Login(QDialog):
         else:
             self.btnLogin = QPushButton(self)
         self.btnLogin.setText('Login')
-        self.btnLogin.move(7,self.height/1.3)
+        self.btnLogin.move(7, self.height/1.3)
         self.btnLogin.resize(self.width - (7 * 2), 30)
         self.btnLogin.setToolTip('Login to account.')
         self.btnLogin.setFont(QFont('Calibri', 12))
@@ -1057,39 +1113,46 @@ class MsgBox(QDialog):
         super(MsgBox, self).__init__(parent)
         self.show_login = show_login
         self.title = msgtitle
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.width = width / 1.5
         self.height = height / 4.5
         self.setFixedSize(self.width, self.height)
 
         if dark_theme:
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
-        # TITLE BAR START
-        self.menuBarTitle = QLabel(self)
-        self.menuBarTitle.setText('  ' + self.title)
-        self.menuBarTitle.resize(self.width, btn_size + 1)
-        self.menuBarTitle.move(0,0)
-        self.menuBarTitle.setFont(QFont('Calibri', 10))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
+        
+            # TITLE BAR START
+            self.menuBarTitle = QLabel(self)
+            self.menuBarTitle.setText('  ' + self.title)
+            self.menuBarTitle.resize(self.width, btn_size + 1)
+            self.menuBarTitle.move(0,0)
+            self.menuBarTitle.setFont(QFont('Calibri', 10))
+            self.menuBarImage = QLabel(self)
+            self.icon = QPixmap('icons/icon.png')
+            self.menuBarImage.move(5, 5)
+            self.menuBarImage.setPixmap(self.icon)
+            self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
+            
+            self.btn_close = ButtonRed(self)
+            self.btn_close.clicked.connect(self.btn_proceed)
+            self.btn_close.resize(btn_size + 10,btn_size)
+            self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+            self.btn_close.move(self.width - (btn_size + 10),0)
+            self.btn_close.setFont(QFont('Calibri', 15))
+            self.btn_close.setToolTip('Close.')
+            self.btn_close.setIcon(QIcon('icons/exit.png'))
 
-        self.btn_close = ButtonRed(self)
-        self.btn_close.clicked.connect(self.btn_proceed)
-        self.btn_close.resize(btn_size + 10,btn_size)
-        self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
-        self.btn_close.move(self.width - (btn_size + 10),0)
-        self.btn_close.setFont(QFont('Calibri', 15))
-        self.btn_close.setToolTip('Close.')
-        self.btn_close.setIcon(QIcon('icons/exit.png'))
-
-        self.btn_min = ButtonYellow(self)
-        self.btn_min.clicked.connect(self.btn_min_clicked)
-        self.btn_min.resize(btn_size + 10, btn_size)
-        self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
-        self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
-        self.btn_min.setFont(QFont('Calibri', 20))
-        self.btn_min.setToolTip('Minimize.')
-        self.btn_min.setText('-')
-
+            self.btn_min = ButtonYellow(self)
+            self.btn_min.clicked.connect(self.btn_min_clicked)
+            self.btn_min.resize(btn_size + 10, btn_size)
+            self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
+            self.btn_min.setFont(QFont('Calibri', 20))
+            self.btn_min.setToolTip('Minimize.')
+            self.btn_min.setText('-')
+        else:
+            self.setWindowIcon(QIcon('icons/icon.png'))
+            self.setWindowTitle(self.title)
 
         self.lblMessage = QLabel(self)
         self.lblMessage.setText(message)
@@ -1151,39 +1214,47 @@ class create_password(QDialog):
         super(create_password, self).__init__(parent)
         self.check_if_file_exists()
         self.title = title + ' ' + version
-        self.setWindowFlags(Qt.FramelessWindowHint)
         self.width = width / 1.5
         self.height = height / 2.5
         self.setFixedSize(self.width, self.height)
 
         if dark_theme:
+            self.setWindowFlags(Qt.FramelessWindowHint)
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
-        # TITLE BAR START
-        self.menuBarTitle = QLabel(self)
-        self.menuBarTitle.setText('  Create a Password')
-        self.menuBarTitle.resize(self.width, btn_size + 1)
-        self.menuBarTitle.move(0,0)
-        self.menuBarTitle.setFont(QFont('Calibri', 8))
-        self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border-radius: 3px;  border: 1px solid black; ")
+            # TITLE BAR START
+            self.menuBarTitle = QLabel(self)
+            self.menuBarTitle.setText('  Create a Password')
+            self.menuBarTitle.resize(self.width, btn_size + 1)
+            self.menuBarTitle.move(0,0)
+            self.menuBarTitle.setFont(QFont('Calibri', 8))
+            self.menuBarImage = QLabel(self)
+            self.icon = QPixmap('icons/icon.png')
+            self.menuBarImage.move(5, 5)
+            self.menuBarImage.setPixmap(self.icon)
+            self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
+                
 
-        self.btn_close = ButtonRed(self)
-        self.btn_close.clicked.connect(self.btn_close_clicked)
-        self.btn_close.resize(btn_size + 10,btn_size)
-        self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
-        self.btn_close.move(self.width - (btn_size + 10),0)
-        self.btn_close.setFont(QFont('Calibri', 15))
-        self.btn_close.setToolTip('Close.')
-        self.btn_close.setIcon(QIcon('icons/exit.png'))
+            self.btn_close = ButtonRed(self)
+            self.btn_close.clicked.connect(self.btn_close_clicked)
+            self.btn_close.resize(btn_size + 10,btn_size)
+            self.btn_close.setStyleSheet("background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
+            self.btn_close.move(self.width - (btn_size + 10),0)
+            self.btn_close.setFont(QFont('Calibri', 15))
+            self.btn_close.setToolTip('Close.')
+            self.btn_close.setIcon(QIcon('icons/exit.png'))
 
-        self.btn_min = ButtonYellow(self)
-        self.btn_min.clicked.connect(self.btn_min_clicked)
-        self.btn_min.resize(btn_size + 10, btn_size)
-        self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
-        self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
-        self.btn_min.setFont(QFont('Calibri', 20))
-        self.btn_min.setToolTip('Minimize.')
-        self.btn_min.setText('-')
-        # TITLE BAR END
+            self.btn_min = ButtonYellow(self)
+            self.btn_min.clicked.connect(self.btn_min_clicked)
+            self.btn_min.resize(btn_size + 10, btn_size)
+            self.btn_min.setStyleSheet("color: black; background-color: #e6cc1a; border-radius: 3px; border-style: none; border: 1px solid black;")
+            self.btn_min.move(self.width - (btn_size + btn_size + 20),0)
+            self.btn_min.setFont(QFont('Calibri', 20))
+            self.btn_min.setToolTip('Minimize.')
+            self.btn_min.setText('-')
+            # TITLE BAR END
+        else:
+            self.setWindowIcon(QIcon('icons/icon.png'))
+            self.setWindowTitle(self.title)
         self.lblInfo = QLabel(self)
         self.lblInfo.move(7, 27)
         font = (QFont('Calibri', 8))
@@ -1235,14 +1306,16 @@ class create_password(QDialog):
 
         if len(x) < 8:
             self.lblInfo.setText(' Password must be greater than \n8 charecters.')
-            self.menuBarTitle.setText('  Create a Password')
+            
             self.btnCreatePassword.setEnabled(False)
             if dark_theme:
+                self.menuBarTitle.setText('  Create a Password')
                 self.lblInfo.setStyleSheet("color: #8b0000")
                 self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
                 self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
             else:
+                self.setWindowTitle('  Create a Password')
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
                 self.txtPasswordConfirm.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
 
@@ -1253,10 +1326,15 @@ class create_password(QDialog):
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
-
-            self.menuBarTitle.setText('  Confirm Password')
+            if dark_theme:
+                self.menuBarTitle.setText('  Confirm Password')
+            else:
+                self.setWindowTitle('  Confirm Password')
             if self.txtPasswordConfirm.text() == self.txtPassword.text():
-                self.menuBarTitle.setText('  Save Password')
+                if dark_theme:
+                    self.menuBarTitle.setText('  Save Password')
+                else:
+                    self.setWindowTitle('  Save Password')
                 self.btnCreatePassword.setEnabled(True)
                 if dark_theme:
                     self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
@@ -1266,7 +1344,10 @@ class create_password(QDialog):
 
             else:
                 if len(y) >= 1:
-                    self.menuBarTitle.setText('  Password Doesn\'t Match')
+                    if dark_theme:
+                        self.menuBarTitle.setText('  Password Doesn\'t Match')
+                    else:
+                        self.setWindowTitle('  Password Doesn\'t Match')
                 self.btnCreatePassword.setEnabled(False)
                 if dark_theme:
                     self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
@@ -1478,7 +1559,8 @@ if __name__ == '__main__':
         create_pass_popup = create_password()
         create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
         create_pass_popup.setWindowTitle('Create Password')
-        create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+        if dark_theme:
+            create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
         create_pass_popup.show()
     else:
         if os.stat(password_dir + 'key.key').st_size != 0:
@@ -1489,7 +1571,8 @@ if __name__ == '__main__':
             create_pass_popup = create_password()
             create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
             create_pass_popup.setWindowTitle('Create Password')
-            create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+            if dark_theme:
+                create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
             create_pass_popup.show()
 
     if not os.path.exists(password_dir + 'master.key'):
@@ -1499,7 +1582,8 @@ if __name__ == '__main__':
         create_pass_popup = create_password()
         create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
         create_pass_popup.setWindowTitle('Create Password')
-        create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+        if dark_theme:
+            create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
         create_pass_popup.show()
     else:
         file = open(password_dir + "master.key", "rb")
