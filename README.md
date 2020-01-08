@@ -1,4 +1,4 @@
-# JPM-J-Password-Manager
+# J-Password-Manager
 Tired of forgetting your password?
 Don't trust online password managers?
 
