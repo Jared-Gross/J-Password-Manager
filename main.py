@@ -29,11 +29,23 @@ site_names = []
 passwords_json = []
 
 
-dark_theme = False
+# 0 = White
+# 1 = Dark
+# 2 = COlorful
+dark_theme = 0
 class MainMenu(QMainWindow):
     resized = QtCore.pyqtSignal()
     def __init__(self):
         super().__init__()
+        global dark_theme
+        with open(password_dir + 'settings.json') as file:
+            settings = json.load(file)
+            if settings['darkmode'] == '0':
+                dark_theme = 0
+            elif settings['darkmode'] == '1':
+                dark_theme = 1
+            elif settings['darkmode'] == '2':
+                dark_theme = 2
         self.resized_bool = False
         self.last_pos_x = 0
         self.last_pos_w= 0
@@ -46,7 +58,7 @@ class MainMenu(QMainWindow):
         self.num_of_lower_buttons = 4
 
         self.setMinimumSize(self.width, self.height)
-        if dark_theme:
+        if dark_theme == 2:
             self.menuBarTitle = QLabel(self)
             self.setWindowFlags(Qt.FramelessWindowHint)
             # TITLE BAR START
@@ -56,10 +68,7 @@ class MainMenu(QMainWindow):
             self.icon = QPixmap('icons/icon.png')
             self.menuBarImage.move(5, 0)
             self.menuBarImage.setPixmap(self.icon)
-            if dark_theme:
-                self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
-            else:
-                self.menuBarTitle.setStyleSheet(" background-color: #dbdbdb; color: #0b2248; border: 1px solid black; ")
+            self.menuBarTitle.setStyleSheet(" background-color: #121212; color: #143f85; border: 1px solid black; ")
 
             # self.menuBarTitle.clicked.connect(self.on_click)
             # self.menuBarTitle.doubleClicked.connect(self.on_doubleclick)
@@ -91,7 +100,15 @@ class MainMenu(QMainWindow):
         else:
             self.setWindowIcon(QIcon('icons/icon.png'))
             self.setWindowTitle(self.title)
-        if dark_theme:
+        
+        self.dark_mode = QCheckBox(self)
+        self.dark_mode.setCheckState(dark_theme)
+        self.dark_mode.setTristate(True)
+        if dark_theme == 2:
+            self.dark_mode.setStyleSheet('color: white; background-color: #151515')
+        self.dark_mode.move(8, 55)
+        self.dark_mode.stateChanged.connect(self.darkmode)
+        if dark_theme == 2:
             self.txtSearch = LineEdit(self)
             self.txtSearch.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         else:
@@ -101,14 +118,8 @@ class MainMenu(QMainWindow):
         self.txtSearch.setToolTip('Search for password with the name of the website.')
         self.txtSearch.setText('')
 
-        self.dark_mode = QCheckBox(self)
-        self.dark_mode.setChecked(dark_theme)
-        self.dark_mode.move(8, 55)
-        self.dark_mode.setText('Dark mode')
-        self.dark_mode.setToolTip('Enable/Disable Dark mode')
-        self.dark_mode.stateChanged.connect(self.darkmode)
 
-        if dark_theme:
+        if dark_theme == 2:
             self.btnRefresh = ButtonGreen(self)
             self.btnRefresh.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -119,7 +130,7 @@ class MainMenu(QMainWindow):
         self.btnRefresh.clicked.connect(self.refresh_password_list)
 
         self.sizegrip = QSizeGrip(self)
-        if dark_theme:
+        if dark_theme == 2:
             self.btnLogout = ButtonRed(self)
             self.btnLogout.setStyleSheet("color: white; background-color: #8b0000; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -129,7 +140,7 @@ class MainMenu(QMainWindow):
         self.btnLogout.clicked.connect(self.logout)
         self.btnLogout.setToolTip('Go to Login screen.')
 
-        if dark_theme:
+        if dark_theme == 2:
             self.btnAdd = ButtonGreen(self)
             self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -139,7 +150,7 @@ class MainMenu(QMainWindow):
         self.btnAdd.clicked.connect(self.add_password)
         self.btnAdd.setToolTip('Add a password.')
 
-        if dark_theme:
+        if dark_theme == 2:
             self.btnExport = ButtonGreen(self)
             self.btnExport.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -149,7 +160,7 @@ class MainMenu(QMainWindow):
         self.btnExport.clicked.connect(self.export_passwords)
         self.btnExport.setToolTip('Export all files into a .csv file to view in excel.')
 
-        if dark_theme:
+        if dark_theme == 2:
             self.btnImport = ButtonGreen(self)
             self.btnImport.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -162,12 +173,22 @@ class MainMenu(QMainWindow):
         self.scroll = QScrollArea(self)
 
 
-        if dark_theme:
+        if dark_theme == 2:
+            self.dark_mode.setText('Colorful mode.')
+            self.dark_mode.setToolTip('Colorful mode is currently active.')
             self.sizegrip.setStyleSheet('''QSizeGrip {
                 image: url("icons/exit.png");
                 background-color: black;
             }''')
             app.setStyle("Fusion")
+            self.setStyleSheet("""QMainWindow{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
+        elif dark_theme == 0:
+            self.dark_mode.setText('Light mode.')
+            self.dark_mode.setToolTip('Light mode is currently active.')
+            QApplication.setPalette(QApplication.style().standardPalette())
+        elif dark_theme == 1:
+            self.dark_mode.setText('Dark mode.')
+            self.dark_mode.setToolTip('Dark mode is currently active.')
             palette = QPalette()
             palette.setColor(QPalette.Window, QColor(53, 53, 53))
             palette.setColor(QPalette.WindowText, Qt.white)
@@ -183,7 +204,6 @@ class MainMenu(QMainWindow):
             palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
             palette.setColor(QPalette.HighlightedText, Qt.black)
             app.setPalette(palette)
-            self.setStyleSheet("""QMainWindow{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.sizegrip.setCursor(QtCore.Qt.SplitVCursor)
         self.resized.connect(self.someFunction)
         self.refresh_password_list()
@@ -195,7 +215,7 @@ class MainMenu(QMainWindow):
         self.width = w
         # print(str(self.w) + ' x ' + str(self.h))
         # self.resize(200, 200)
-        if dark_theme:
+        if dark_theme == 2:
             self.menuBarTitle.resize(self.width, btn_size + 1)
             self.btn_close.move(self.width - (btn_size + 10),0)
             self.btn_max.move(self.width - (btn_size + btn_size + 20),0)
@@ -224,18 +244,39 @@ class MainMenu(QMainWindow):
         print("Click")
 
     def darkmode(self, state):
+        global dark_theme
         with open(password_dir + 'settings.json') as file:
             settings = json.load(file)
-        if state == Qt.Checked:
+        if state == 0:
+            self.dark_mode.setText('Light mode.')
+            self.dark_mode.setToolTip('Light mode is currently active.')
             new_settings = {
-                'darkmode': 'True'
+                'darkmode': '0'
             }
-        else:
+        elif state == 1:
+            self.dark_mode.setText('Dark mode.')
+            self.dark_mode.setToolTip('Dark mode is currently active.')
             new_settings = {
-                'darkmode': 'False'
+                'darkmode': '1'
+            }
+        elif state == 2:
+            self.dark_mode.setText('Colorful mode.')
+            self.dark_mode.setToolTip('Colorful mode is currently active.')
+            new_settings = {
+                'darkmode': '2'
             }
         with open(password_dir + 'settings.json', mode='w+', encoding='utf-8') as file:
             json.dump(new_settings, file, ensure_ascii=False, indent=4)
+        # if not dark_theme:
+        #     self.m = MsgBox('Please restart the program\nso dark mode can take effect.', '     Notice!', False)
+        #     self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
+        # else:
+        #     self.m = MsgBox('Please restart the program\nso light mode can take effect.', '     Notice!', False)
+            
+        # self.m.show()
+        self.mainmenu = MainMenu()
+        self.mainmenu.show()
+        self.close()
     @pyqtSlot()
     def on_doubleclick(self):
         self.max()
@@ -391,14 +432,14 @@ class MainMenu(QMainWindow):
             self.refresh_password_list()
     def refresh_password_list(self):
         # scroll = QScrollArea(self)
-        if dark_theme:
+        if dark_theme == 2:
             self.scroll.setStyleSheet("QScrollArea {background-color:white;}");
         self.scroll.move(7, 80)
         self.scroll.setWidgetResizable(True)
         self.content = QWidget()
         self.scroll.setWidget(self.content)
         lay = QGridLayout(self.content)
-        if dark_theme:
+        if dark_theme == 2:
             self.content.setStyleSheet('background-color: #181818;')
         # lay.setColumnStretch(0, 1)
         y = 0
@@ -406,7 +447,7 @@ class MainMenu(QMainWindow):
         self.lblName.setText('Name:')
         self.lblName.setAlignment(Qt.AlignLeft)
         self.lblName.setFont(QFont('Calibri', 14))
-        if dark_theme:
+        if dark_theme == 2:
             self.lblName.setStyleSheet("color: #008a11;")
         lay.addWidget((self.lblName), 0, 0)
 
@@ -414,7 +455,7 @@ class MainMenu(QMainWindow):
         self.lblPassword.setText('Username:')
         self.lblPassword.setAlignment(Qt.AlignLeft)
         self.lblPassword.setFont(QFont('Calibri', 14))
-        if dark_theme:
+        if dark_theme == 2:
             self.lblPassword.setStyleSheet("color: #e0d725;")
         lay.addWidget((self.lblPassword), 0, 1)
 
@@ -422,7 +463,7 @@ class MainMenu(QMainWindow):
         self.lblPassword.setText('Passwords:')
         self.lblPassword.setAlignment(Qt.AlignLeft)
         self.lblPassword.setFont(QFont('Calibri', 14))
-        if dark_theme:
+        if dark_theme == 2:
             self.lblPassword.setStyleSheet("color: #144a85;")
         lay.addWidget((self.lblPassword), 0, 2)
         if not site_names:
@@ -443,7 +484,7 @@ class MainMenu(QMainWindow):
                 y += 1
 
                 self.txtWebsite = QLineEdit(self)
-                if dark_theme:
+                if dark_theme == 2:
                     self.txtWebsite.setStyleSheet("background-color :#202020; text-align: left; color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
                 self.txtWebsite.setReadOnly(True)
                 self.txtWebsite.setFont(QFont('Calibri', 11))
@@ -454,7 +495,7 @@ class MainMenu(QMainWindow):
                 # TEXT START
 
                 self.txtUsername = QLineEdit(self)
-                if dark_theme:
+                if dark_theme == 2:
                     self.txtUsername.setStyleSheet("background-color :#202020; text-align: left; color: #e0d725;border-radius: 3px;border-style: none; border: 1px solid rgb(170,136,0);")
                 self.txtUsername.setReadOnly(True)
                 self.txtUsername.setFont(QFont('Calibri', 11))
@@ -463,7 +504,7 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.txtUsername), y, 1)
 
                 self.txtPassword = QLineEdit(self)
-                if dark_theme:
+                if dark_theme == 2:
                     self.txtPassword.setStyleSheet("background-color :#202020; text-align: left; color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
                 self.txtPassword.setReadOnly(True)
                 self.txtPassword.setFont(QFont('Calibri', 11))
@@ -473,7 +514,7 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.txtPassword), y, 2)
                 # BUTTON EDIT START
                 btnCopy = partial(self.copy_password, self.txtPassword.text())
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnCopy = ButtonGreen(self)
                     self.btnCopy.setStyleSheet("text-align: center;background-color: #008a11; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 else:
@@ -485,7 +526,7 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.btnCopy), y, 3)
 
                 btnEdit = partial(self.edit_password, self.txtUsername.text(), self.txtWebsite.text(), self.txtPassword.text())
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnEdit = ButtonBlue(self)
                     self.btnEdit.setStyleSheet("text-align: center;background-color: #144a85; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 else:
@@ -498,7 +539,7 @@ class MainMenu(QMainWindow):
                 # BUTTON EDIT END
                 # BUTTON DELETE START
                 btnDelete = partial(self.delete_password, self.txtWebsite.text())
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnDelete = ButtonRed(self)
                     self.btnDelete.setStyleSheet("text-align: center;background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 else:
@@ -519,7 +560,7 @@ class MainMenu(QMainWindow):
                 y += 1
 
                 self.txtWebsite = QLineEdit(self)
-                if dark_theme:
+                if dark_theme == 2:
                     self.txtWebsite.setStyleSheet("background-color :#202020; text-align: left; color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
                 self.txtWebsite.setReadOnly(True)
                 self.txtWebsite.setFont(QFont('Calibri', 11))
@@ -530,7 +571,7 @@ class MainMenu(QMainWindow):
                 # TEXT START
 
                 self.txtUsername = QLineEdit(self)
-                if dark_theme:
+                if dark_theme == 2:
                     self.txtUsername.setStyleSheet("background-color :#202020; text-align: left; color: #e0d725;border-radius: 3px;border-style: none; border: 1px solid rgb(170,136,0);")
                 self.txtUsername.setReadOnly(True)
                 self.txtUsername.setFont(QFont('Calibri', 11))
@@ -539,7 +580,7 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.txtUsername), y, 1)
 
                 self.txtPassword = QLineEdit(self)
-                if dark_theme:
+                if dark_theme == 2:
                     self.txtPassword.setStyleSheet("background-color :#202020; text-align: left; color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
                 self.txtPassword.setReadOnly(True)
                 self.txtPassword.setFont(QFont('Calibri', 11))
@@ -549,7 +590,7 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.txtPassword), y, 2)
                 # BUTTON EDIT START
                 btnCopy = partial(self.copy_password, self.txtPassword.text())
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnCopy = ButtonGreen(self)
                     self.btnCopy.setStyleSheet("text-align: center;background-color: #008a11; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 else:
@@ -561,7 +602,7 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.btnCopy), y, 3)
 
                 btnEdit = partial(self.edit_password, self.txtUsername.text(), self.txtWebsite.text(), self.txtPassword.text())
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnEdit = ButtonBlue(self)
                     self.btnEdit.setStyleSheet("text-align: center;background-color: #144a85; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 else:
@@ -574,7 +615,7 @@ class MainMenu(QMainWindow):
                 # BUTTON EDIT END
                 # BUTTON DELETE START
                 btnDelete = partial(self.delete_password, self.txtWebsite.text())
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnDelete = ButtonRed(self)
                     self.btnDelete.setStyleSheet("text-align: center;background-color: #8b0000; border-radius: 3px;  border-style: none; border: 1px solid black;")
                 else:
@@ -586,13 +627,14 @@ class MainMenu(QMainWindow):
                 lay.addWidget((self.btnDelete), y, 5)
                 # BUTTON END
         self.layout().addWidget(self.scroll)
-        if dark_theme:
+        if dark_theme == 2:
             self.scroll.setStyleSheet("QScrollArea{background-color: #131313; border-radius: 3px;border-style: none; border: 1px solid black;}")
         # lay.setStyleSheet("QGridLayout{border-radius: 3px;border-style: none; border: 1px solid darkblue;}")
 
     def edit_password(self, u, w, p):
         self.addPopup = add_passwords(u,w,p, True)
-        self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
+        if not dark_theme == 2:
+            self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.addPopup.show()
     def delete_password(self, name):
         with open(password_dir + 'passwords.json') as file:
@@ -624,17 +666,20 @@ class MainMenu(QMainWindow):
                     site_names.append(site)
 
         self.m = MsgBox('Password Deleted!', 'Success!', False)
-        self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
+        if not dark_theme == 2:
+            self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.m.show()
         self.refresh_password_list()
     def add_password(self):
         self.addPopup = add_passwords('','','', False)
-        self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
+        if not dark_theme == 2:
+            self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.addPopup.show()
     def logout(self):
         self.close()
         self.login = Login()
-        self.login.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
+        if not dark_theme == 2:
+            self.login.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
         self.login.setWindowTitle('Login')
         self.login.show()
     def copy_password(self,b):
@@ -663,6 +708,8 @@ class MainMenu(QMainWindow):
             self.oldPos = event.globalPos()
         except AttributeError:
             print('oh no')
+        finally:
+            print('oh no')
     # MOVE WINDOW END
 
 
@@ -672,22 +719,22 @@ class add_passwords(QDialog):
         self.name = w
         self.delete = delete_password
         self.title = title + ' ' + version
-        if dark_theme:
+        if dark_theme == 2:
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
         self.width = width / 1.5
         self.height = height / 1.7
         self.setFixedSize(self.width, self.height)
-        if dark_theme:
+        if dark_theme == 2:
             self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
             # TITLE BAR START
             self.menuBarTitle = QLabel(self)
             if self.delete:
-                if dark_theme:
+                if dark_theme == 2:
                     self.menuBarTitle.setText(self.title + ' - Change')
                 else:
                     self.setWindowTitle(self.title + ' - Change')
             else:
-                if dark_theme:
+                if dark_theme == 2:
                     self.menuBarTitle.setText(self.title + ' - Add')
                 else:
                     self.setWindowTitle(self.title + ' - Add')
@@ -724,18 +771,24 @@ class add_passwords(QDialog):
         # TITLE BAR END
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Password:')
+        if dark_theme == 2:
+            self.lblInfo.setStyleSheet('color: white')
         self.lblInfo.move(7, 145)
 
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Website:')
+        if dark_theme == 2:
+            self.lblInfo.setStyleSheet('color: white')
         self.lblInfo.move(7, 45)
 
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Username:')
+        if dark_theme == 2:
+            self.lblInfo.setStyleSheet('color: white')
         self.lblInfo.move(7, 95)
         # self.lblInfo.resize(self.width - (7 * 2), 50)
         # ADD ITEMS START
-        if dark_theme:
+        if dark_theme == 2:
             self.btnAdd = ButtonGreen(self)
             self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -753,7 +806,7 @@ class add_passwords(QDialog):
         self.btnAdd.clicked.connect(self.add)
 
         self.txtWebsite = LineEdit(self)
-        if dark_theme:
+        if dark_theme == 2:
             self.txtWebsite.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtWebsite.move(7, 60)
         self.txtWebsite.resize(self.width - (7 * 2), 30)
@@ -765,7 +818,7 @@ class add_passwords(QDialog):
         self.txtUsername = LineEdit(self)
         self.txtUsername.move(7, 110)
         self.txtUsername.resize(self.width - (7 * 2), 30)
-        if dark_theme:
+        if dark_theme == 2:
             self.txtUsername.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtUsername.setText(u)
         self.txtUsername.setToolTip('Your Username')
@@ -776,7 +829,7 @@ class add_passwords(QDialog):
         self.txtPassword.setEchoMode(QLineEdit.Password)
         self.txtPassword.move(7, 160)
         self.txtPassword.resize(self.width - (7 * 2), 30)
-        if dark_theme:
+        if dark_theme == 2:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtPassword.setText(p)
         self.txtPassword.textChanged.connect(self.verify_text)
@@ -819,7 +872,7 @@ class add_passwords(QDialog):
 
             self.btnAdd.setText('Add')
             self.btnAdd.setToolTip('Add Password.')
-            if dark_theme:
+            if dark_theme == 2:
                 self.menuBarTitle.setText(self.title + ' - Add')
             else:
                 self.setWindowTitle(self.title + ' - Add')
@@ -899,48 +952,48 @@ class add_passwords(QDialog):
 
         if len(x) > 0:
 
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
 
         else:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
 
         if len(y) > 0:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtWebsite.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             else:
                 self.txtWebsite.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
 
         else:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtWebsite.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
             else:
                 self.txtWebsite.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
 
         if len(z) > 0:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtUsername.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             else:
                 self.txtUsername.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
 
         else:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtUsername.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
             else:
                 self.txtUsername.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
 
         if len(x) > 0 and len(y) > 0 and len(z) > 0:
             self.btnAdd.setEnabled(True)
-            if dark_theme:
+            if dark_theme == 2:
                 self.btnAdd.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
             self.btnAdd.setEnabled(False)
-            if dark_theme:
+            if dark_theme == 2:
                 self.btnAdd.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
 
     def keyPressEvent(self, event):
@@ -964,10 +1017,12 @@ class add_passwords(QDialog):
     def mouseMoveEvent(self, event):
         try:
             delta = QPoint (event.globalPos() - self.oldPos)
-            #print(delta)
+            # print(delta)
             self.move(self.x() + delta.x(), self.y() + delta.y())
             self.oldPos = event.globalPos()
         except AttributeError:
+            print('oh no')
+        finally:
             print('oh no')
     # MOVE WINDOW END
 
@@ -979,7 +1034,7 @@ class Login(QDialog):
         self.title = title + ' ' + version
         self.width = width / 1.5
         self.height = height / 2.5
-        if dark_theme:
+        if dark_theme == 2:
             self.setWindowFlags(Qt.FramelessWindowHint)
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
             self.setFixedSize(self.width, self.height)
@@ -1019,10 +1074,12 @@ class Login(QDialog):
         # TITLE BAR END
         self.lblInfo = QLabel(self)
         self.lblInfo.setText('Password:')
+        if dark_theme == 2:
+            self.lblInfo.setStyleSheet('color: white')
         self.lblInfo.move(7, 60)
         # self.lblInfo.resize(self.width - (7 * 2), 50)
         # LOGIN ITEMS START
-        if dark_theme:
+        if dark_theme == 2:
             self.btnLogin = ButtonGreen(self)
             self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -1035,7 +1092,7 @@ class Login(QDialog):
         self.btnLogin.clicked.connect(self.login)
 
         self.txtPassword = LineEdit(self)
-        if dark_theme:
+        if dark_theme == 2:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
         self.txtPassword.setEchoMode(QLineEdit.Password)
         # self.txtPassword.setText('Password')
@@ -1051,16 +1108,16 @@ class Login(QDialog):
     def verify_text(self):
         x = list(self.txtPassword.text())
         if len(x) > 0:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #144a85;border-radius: 3px;border-style: none; border: 1px solid darkblue;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkblue;")
             self.btnLogin.setEnabled(True)
-            if dark_theme:
+            if dark_theme == 2:
                 self.btnLogin.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
             self.btnLogin.setEnabled(False)
-            if dark_theme:
+            if dark_theme == 2:
                 self.btnLogin.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
 
     def keyPressEvent(self, event):
@@ -1077,7 +1134,7 @@ class Login(QDialog):
         temp_master = temp_master.decode('utf-8')
         x = list(self.txtPassword.text())
         if temp == temp_master:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
@@ -1090,7 +1147,7 @@ class Login(QDialog):
             self.main.show()
             self.close()
         else:
-            if dark_theme:
+            if dark_theme == 2:
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkred;")
@@ -1113,10 +1170,15 @@ class Login(QDialog):
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint (event.globalPos() - self.oldPos)
-        #print(delta)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
+        try:
+            delta = QPoint (event.globalPos() - self.oldPos)
+            # print(delta)
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+        except AttributeError:
+            print('oh no')
+        finally:
+            print('oh no')
     # MOVE WINDOW END
 
     def btn_close_clicked(self):
@@ -1137,7 +1199,7 @@ class MsgBox(QDialog):
         self.height = height / 4.5
         self.setFixedSize(self.width, self.height)
 
-        if dark_theme:
+        if dark_theme == 2:
             self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
 
@@ -1171,14 +1233,17 @@ class MsgBox(QDialog):
             self.btn_min.setToolTip('Minimize.')
             self.btn_min.setText('-')
         else:
+            self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
             self.setWindowIcon(QIcon('icons/icon.png'))
             self.setWindowTitle(self.title)
 
         self.lblMessage = QLabel(self)
         self.lblMessage.setText(message)
+        if dark_theme == 2:
+            self.lblMessage.setStyleSheet('color: white')
         self.lblMessage.move(7, 30)
 
-        if dark_theme:
+        if dark_theme == 2:
             self.btnOk = ButtonGreen(self)
             self.btnOk.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -1195,7 +1260,10 @@ class MsgBox(QDialog):
         self.login_popup = Login()
         self.login_popup.setFixedSize(width / 1.5, height / 2.5)
         self.login_popup.setWindowTitle('Login')
-        self.login_popup.setWindowFlags(Qt.FramelessWindowHint)
+        if dark_theme == 2:
+            self.login_popup.setWindowFlags(Qt.FramelessWindowHint)
+        else:
+            self.login_popup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
         self.login_popup.show()
         self.close()
     def btn_min_clicked(self):
@@ -1212,10 +1280,15 @@ class MsgBox(QDialog):
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint (event.globalPos() - self.oldPos)
-        #print(delta)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
+        try:
+            delta = QPoint (event.globalPos() - self.oldPos)
+            # print(delta)
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+        except AttributeError:
+            print('oh no')
+        finally:
+            print('oh no')
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
@@ -1238,7 +1311,7 @@ class create_password(QDialog):
         self.height = height / 2.5
         self.setFixedSize(self.width, self.height)
 
-        if dark_theme:
+        if dark_theme == 2:
             self.setWindowFlags(Qt.FramelessWindowHint)
             self.setStyleSheet("""QDialog{background-color: #151515; border-radius: 3px; border: 1px solid black;}""")
             # TITLE BAR START
@@ -1277,12 +1350,14 @@ class create_password(QDialog):
             self.setWindowTitle(self.title)
         self.lblInfo = QLabel(self)
         self.lblInfo.move(7, 27)
+        if dark_theme == 2:
+            self.lblInfo.setStyleSheet('color: white')
         font = (QFont('Calibri', 8))
         font.setItalic(True)
         self.lblInfo.setFont(font)
 
         # LOGIN ITEMS START
-        if dark_theme:
+        if dark_theme == 2:
             self.btnCreatePassword = ButtonGreen(self)
             self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
         else:
@@ -1303,7 +1378,7 @@ class create_password(QDialog):
         self.txtPassword.setToolTip('Create a Password')
         self.txtPassword.move(7, self.height / 3)
         self.txtPassword.resize(self.width - (7 * 2), 30)
-        if dark_theme:
+        if dark_theme == 2:
             self.txtPassword.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
         self.txtPassword.textChanged.connect(self.verify_text)
 
@@ -1312,7 +1387,7 @@ class create_password(QDialog):
         self.txtPasswordConfirm.setToolTip('Confirm Your Password')
         self.txtPasswordConfirm.move(7, self.height / 1.8)
         self.txtPasswordConfirm.resize(self.width - (7 * 2), 30)
-        if dark_theme:
+        if dark_theme == 2:
             self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
         self.txtPasswordConfirm.textChanged.connect(self.verify_text)
         self.verify_text()
@@ -1328,7 +1403,7 @@ class create_password(QDialog):
             self.lblInfo.setText(' Password must be greater than \n8 charecters.')
 
             self.btnCreatePassword.setEnabled(False)
-            if dark_theme:
+            if dark_theme == 2:
                 self.menuBarTitle.setText('  Create a Password')
                 self.lblInfo.setStyleSheet("color: #8b0000")
                 self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
@@ -1341,22 +1416,22 @@ class create_password(QDialog):
 
         elif len(x) >= 8:
             self.lblInfo.setText(' Password is greater than \n8 charecters.')
-            if dark_theme:
+            if dark_theme == 2:
                 self.lblInfo.setStyleSheet("color: #008a11")
                 self.txtPassword.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
             else:
                 self.txtPassword.setStyleSheet("border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
-            if dark_theme:
+            if dark_theme == 2:
                 self.menuBarTitle.setText('  Confirm Password')
             else:
                 self.setWindowTitle('  Confirm Password')
             if self.txtPasswordConfirm.text() == self.txtPassword.text():
-                if dark_theme:
+                if dark_theme == 2:
                     self.menuBarTitle.setText('  Save Password')
                 else:
                     self.setWindowTitle('  Save Password')
                 self.btnCreatePassword.setEnabled(True)
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnCreatePassword.setStyleSheet("color: white; background-color: #008a11; border-radius: 3px; border-style: none; border: 1px solid black;")
                     self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #008a11;border-radius: 3px;border-style: none; border: 1px solid darkgreen;")
                 else:
@@ -1364,12 +1439,12 @@ class create_password(QDialog):
 
             else:
                 if len(y) >= 1:
-                    if dark_theme:
+                    if dark_theme == 2:
                         self.menuBarTitle.setText('  Password Doesn\'t Match')
                     else:
                         self.setWindowTitle('  Password Doesn\'t Match')
                 self.btnCreatePassword.setEnabled(False)
-                if dark_theme:
+                if dark_theme == 2:
                     self.btnCreatePassword.setStyleSheet("color: white; background-color: #444444; border-radius: 3px; border-style: none; border: 1px solid black;")
                     self.txtPasswordConfirm.setStyleSheet("background-color :#202020;color: #8b0000;border-radius: 3px;border-style: none; border: 1px solid darkred;")
                 else:
@@ -1401,6 +1476,7 @@ class create_password(QDialog):
             file.close()
             # buttonReply = QMessageBox.information(self, 'Notice', "Password Saved!\nDo not forget this password!", QMessageBox.Ok, QMessageBox.Ok)
             self.m = MsgBox('Password Saved!\nDo not forget this password!', 'Notice!', True)
+            self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
             self.m.show()
 
             self.close()
@@ -1430,10 +1506,15 @@ class create_password(QDialog):
         self.oldPos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        delta = QPoint (event.globalPos() - self.oldPos)
-        #print(delta)
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.oldPos = event.globalPos()
+        try:
+            delta = QPoint (event.globalPos() - self.oldPos)
+            # print(delta)
+            self.move(self.x() + delta.x(), self.y() + delta.y())
+            self.oldPos = event.globalPos()
+        except AttributeError:
+            print('oh no')
+        finally:
+            print('oh no')
     # MOVE WINDOW END
 
     def btn_close_clicked(self):
@@ -1549,6 +1630,7 @@ def explore(path):
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     # m = MainMenu()
     # m.show()
     if not os.path.exists(password_dir):
@@ -1556,17 +1638,35 @@ if __name__ == '__main__':
     if not os.path.exists(password_dir + 'settings.json'):
         file = open(password_dir + "settings.json", "w")
         file.write('''{
-    "darkmode": ["False"]
+    "darkmode": "0"
 }
 ''')
         file.close()
     else:
         with open(password_dir + 'settings.json') as file:
             settings = json.load(file)
-            if settings['darkmode'] == 'False':
-                dark_theme = False
-            else:
-                dark_theme = True
+            if settings['darkmode'] == '0':
+                dark_theme = 0
+                QApplication.setPalette(QApplication.style().standardPalette())
+            elif settings['darkmode'] == '1':
+                dark_theme = 1
+                palette = QPalette()
+                palette.setColor(QPalette.Window, QColor(53, 53, 53))
+                palette.setColor(QPalette.WindowText, Qt.white)
+                palette.setColor(QPalette.Base, QColor(25, 25, 25))
+                palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+                palette.setColor(QPalette.ToolTipBase, Qt.white)
+                palette.setColor(QPalette.ToolTipText, Qt.white)
+                palette.setColor(QPalette.Text, Qt.white)
+                palette.setColor(QPalette.Button, QColor(53, 53, 53))
+                palette.setColor(QPalette.ButtonText, Qt.white)
+                palette.setColor(QPalette.BrightText, Qt.red)
+                palette.setColor(QPalette.Link, QColor(42, 130, 218))
+                palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+                palette.setColor(QPalette.HighlightedText, Qt.black)
+                app.setPalette(palette)
+            elif settings['darkmode'] == '2':
+                dark_theme = 2
 
 
     if os.path.exists(password_dir + 'passwords.json'):
@@ -1596,8 +1696,10 @@ if __name__ == '__main__':
         create_pass_popup = create_password()
         create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
         create_pass_popup.setWindowTitle('Create Password')
-        if dark_theme:
+        if dark_theme == 2:
             create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+        else:
+            create_pass_popup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
         create_pass_popup.show()
     else:
         if os.stat(password_dir + 'key.key').st_size != 0:
@@ -1608,8 +1710,10 @@ if __name__ == '__main__':
             create_pass_popup = create_password()
             create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
             create_pass_popup.setWindowTitle('Create Password')
-            if dark_theme:
+            if dark_theme == 2:
                 create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+            else:
+                create_pass_popup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
             create_pass_popup.show()
 
     if not os.path.exists(password_dir + 'master.key'):
@@ -1619,8 +1723,10 @@ if __name__ == '__main__':
         create_pass_popup = create_password()
         create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
         create_pass_popup.setWindowTitle('Create Password')
-        if dark_theme:
+        if dark_theme == 2:
             create_pass_popup.setWindowFlags(Qt.FramelessWindowHint)
+        else:
+            create_pass_popup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
         create_pass_popup.show()
     else:
         file = open(password_dir + "master.key", "rb")
