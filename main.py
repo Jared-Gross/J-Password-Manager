@@ -1,7 +1,5 @@
-# pip install pyqt5
+#!/usr/bin python3
 from PyQt5.QtCore import *
-from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
-from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import QtTest
@@ -12,15 +10,15 @@ from cryptography.fernet import Fernet
 import base64
 
 title = '       JPM'
-version = 'v0.1'
+version = 'v0.2'
 width = 300
 height = 400
 btn_size = 25
 
 import getpass, tempfile, os, json, re, pyperclip, csv, subprocess
 username = getpass.getuser()
-password_dir = tempfile.gettempdir() + '/JMP/'
-FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+password_dir = os.path.dirname(os.path.realpath(__file__)) + '/JMP/'
+#FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
 master_password = ''
 usernames = []
 passwords = []
@@ -326,6 +324,30 @@ class MainMenu(QMainWindow):
                     csv_file.writerow([site_names[i], usernames[i], passwords_list[i]])
             # fileName = fileName.rsplit('/', 1)[0]
             explore(fileName + '.csv')
+    def create_backup(self):
+        # options = QFileDialog.Options()
+        fileName='Backup'
+        if fileName:
+            if fileName.endswith('.csv'):
+                fileName = fileName.replace('.csv','')
+            with open(password_dir + 'passwords.json') as file:
+                x = json.load(file)
+
+            passwords_list = []
+            for i, j in enumerate(site_names):
+                f = Fernet( keys[i].encode('utf-8'))
+                p = passwords[i].encode('utf-8')
+                decrypted_password = f.decrypt(p)
+                decrypted_password = base64.urlsafe_b64decode(decrypted_password)
+                decrypted_password = decrypted_password.decode('utf-8')
+                passwords_list.append(decrypted_password)
+            with open(fileName + ".csv", "w") as file:
+                csv_file = csv.writer(file)
+                csv_file.writerow(['Site name', 'Username', 'Password'])
+                for i, j in enumerate(x):
+                    csv_file.writerow([site_names[i], usernames[i], passwords_list[i]])
+            # fileName = fileName.rsplit('/', 1)[0]
+            explore(fileName + '.csv')
 
     def import_passwords(self):
         global passwords_json
@@ -430,6 +452,7 @@ class MainMenu(QMainWindow):
             with open(password_dir + 'passwords.json') as file:
                 passwords_json = json.load(file)
             self.refresh_password_list()
+            self.create_backup()
     def refresh_password_list(self):
         # scroll = QScrollArea(self)
         if dark_theme == 2:
@@ -630,7 +653,7 @@ class MainMenu(QMainWindow):
         if dark_theme == 2:
             self.scroll.setStyleSheet("QScrollArea{background-color: #131313; border-radius: 3px;border-style: none; border: 1px solid black;}")
         # lay.setStyleSheet("QGridLayout{border-radius: 3px;border-style: none; border: 1px solid darkblue;}")
-
+        # self.create_backup()
     def edit_password(self, u, w, p):
         self.addPopup = add_passwords(u,w,p, True)
         if not dark_theme == 2:
@@ -664,17 +687,18 @@ class MainMenu(QMainWindow):
                     keys.append(key)
                 for site in info['site name']:
                     site_names.append(site)
-
-        self.m = MsgBox('Password Deleted!', 'Success!', False)
-        if not dark_theme == 2:
-            self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
-        self.m.show()
+        # self.create_backup()
+        # self.m = MsgBox('Password Deleted!', 'Success!', False)
+        # if not dark_theme == 2:
+            # self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
+        # self.m.show()
         self.refresh_password_list()
     def add_password(self):
         self.addPopup = add_passwords('','','', False)
         if not dark_theme == 2:
             self.addPopup.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
         self.addPopup.show()
+        self.create_backup()
     def logout(self):
         self.close()
         self.login = Login()
@@ -937,12 +961,36 @@ class add_passwords(QDialog):
             self.m = MsgBox('Password Added!', 'Success!', False)
             self.m.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowStaysOnTopHint | Qt.MSWindowsFixedSizeDialogHint)
             self.m.show()
+        self.create_backup()
     def write_key(self):
         key = Fernet.generate_key()
         return key
     def load_key(self):
         return open(password_dir + "key.key", "rb").read()
+    def create_backup(self):
+        # options = QFileDialog.Options()
+        fileName='Backup'
+        if fileName:
+            if fileName.endswith('.csv'):
+                fileName = fileName.replace('.csv','')
+            with open(password_dir + 'passwords.json') as file:
+                x = json.load(file)
 
+            passwords_list = []
+            for i, j in enumerate(site_names):
+                f = Fernet( keys[i].encode('utf-8'))
+                p = passwords[i].encode('utf-8')
+                decrypted_password = f.decrypt(p)
+                decrypted_password = base64.urlsafe_b64decode(decrypted_password)
+                decrypted_password = decrypted_password.decode('utf-8')
+                passwords_list.append(decrypted_password)
+            with open(fileName + ".csv", "w") as file:
+                csv_file = csv.writer(file)
+                csv_file.writerow(['Site name', 'Username', 'Password'])
+                for i, j in enumerate(x):
+                    csv_file.writerow([site_names[i], usernames[i], passwords_list[i]])
+            # fileName = fileName.rsplit('/', 1)[0]
+            explore(fileName + '.csv')
     def verify_text(self):
         x = list(self.txtPassword.text())
         y = list(self.txtWebsite.text())
@@ -1620,12 +1668,13 @@ def load_key():
     return open(password_dir + "key.key", "rb").read()
 
 def explore(path):
+	print('ye')
     # explorer would choke on forward slashes
-    path = os.path.normpath(path)
-    if os.path.isdir(path):
-        subprocess.run([FILEBROWSER_PATH, path])
-    elif os.path.isfile(path):
-        subprocess.run([FILEBROWSER_PATH, '/select,', os.path.normpath(path)])
+    #path = os.path.normpath(path)
+    #if os.path.isdir(path):
+    #    subprocess.run([FILEBROWSER_PATH, path])
+    #elif os.path.isfile(path):
+    #    subprocess.run([FILEBROWSER_PATH, '/select,', os.path.normpath(path)])
 
 if __name__ == '__main__':
     import sys
@@ -1703,9 +1752,14 @@ if __name__ == '__main__':
         create_pass_popup.show()
     else:
         if os.stat(password_dir + 'key.key').st_size != 0:
-            login = Login()
-            login.setWindowTitle('Login')
-            login.show()
+            # login = Login()
+            # login.setWindowTitle('Login')
+            # login.show()
+            main = MainMenu()
+            main.setWindowTitle('Main')
+            # self.main.setFixedSize(width, height)
+            # self.main.setWindowFlags(Qt.FramelessWindowHint)
+            main.show()
         else:
             create_pass_popup = create_password()
             create_pass_popup.setFixedSize(width / 1.5, height / 2.5)
